@@ -54,6 +54,7 @@ y
 ### 7. Write a logical expression that assesses for each element `i` in vector `x` whether `i` is equal to `56`. The result should be a logical vector of `TRUE`s and `FALSE`s that has the same number of elements as `x`.
 
 ```{r}
+# technically we did not cover this in the lecture, but this is the most efficient way to do it in base R. 
 ifelse(x == 56, TRUE, FALSE)
 ```
 
