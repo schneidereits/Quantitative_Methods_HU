@@ -5,6 +5,8 @@ date: "2.11.2020"
 output: html_document
 ---
 
+## **note** that the .Rmd can be found on my [personal repo](https://github.com/schneidereits/Quantitative_Methods_HU/blob/main/pc_lab/assignment_week_01.Rmd) for the corse
+
 ### 1. Create a vector from a series of numbers:
 
 2;2;2;2;2;2;2;2;2;2;2;8;8;8;8;1;2;3;4;5;6;7;8;9;10;6;5;4;3;2;1;56;56;56;56;8;8;8;8;8

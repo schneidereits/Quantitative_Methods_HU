@@ -184,6 +184,8 @@ summary {
 </div>
 
 
+<div id="note-that-the-.rmd-can-be-found-on-my-personal-repo-for-the-corse" class="section level2">
+<h2><strong>note</strong> that the .Rmd can be found on my <a href="https://github.com/schneidereits/Quantitative_Methods_HU/blob/main/pc_lab/assignment_week_01.Rmd">personal repo</a> for the corse</h2>
 <div id="create-a-vector-from-a-series-of-numbers" class="section level3">
 <h3>1. Create a vector from a series of numbers:</h3>
 <p>2;2;2;2;2;2;2;2;2;2;2;8;8;8;8;1;2;3;4;5;6;7;8;9;10;6;5;4;3;2;1;56;56;56;56;8;8;8;8;8</p>
@@ -223,7 +225,8 @@ y</code></pre>
 </div>
 <div id="write-a-logical-expression-that-assesses-for-each-element-i-in-vector-x-whether-i-is-equal-to-56.-the-result-should-be-a-logical-vector-of-trues-and-falses-that-has-the-same-number-of-elements-as-x." class="section level3">
 <h3>7. Write a logical expression that assesses for each element <code>i</code> in vector <code>x</code> whether <code>i</code> is equal to <code>56</code>. The result should be a logical vector of <code>TRUE</code>s and <code>FALSE</code>s that has the same number of elements as <code>x</code>.</h3>
-<pre class="r"><code>ifelse(x == 56, TRUE, FALSE)</code></pre>
+<pre class="r"><code># technically we did not cover this in the lecture, but this is the most efficient way to do it in base R. 
+ifelse(x == 56, TRUE, FALSE)</code></pre>
 <pre><code>##  [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
 ## [13] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
 ## [25] FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE  TRUE  TRUE FALSE
@@ -252,6 +255,7 @@ y</code></pre>
 <pre class="r"><code>x + 5</code></pre>
 <pre><code>##  [1]  7  7  7  7  7  7  7  7  7  7  7 13 13 13 13  6  7  8  9 10 11 12 13 14 15
 ## [26] 11 10  9  8  7  6 61 61 61 61 13 13 13 13 13</code></pre>
+</div>
 </div>
 
 
