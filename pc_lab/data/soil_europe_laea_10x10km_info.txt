@@ -1,0 +1,7 @@
+Data downloaded 4.12.2019 from https://esdac.jrc.ec.europa.eu/
+
+Data were resampled to 10 x 10 km using averaging to match the bioclim dataset
+
+References:
+Ballabio C., Panagos P., Montanarella L. Mapping topsoil physical properties at European scale using the LUCAS database (2016) Geoderma, 261 , pp. 110-123.
+Ballabio, C., Lugato, E., Fernández-Ugalde, O., Orgiazzi, A., Jones, A., Borrelli, P., Montanarella, L. and Panagos, P., 2019. Mapping LUCAS topsoil chemical properties at European scale using Gaussian process regression. Geoderma, 355: 113912.

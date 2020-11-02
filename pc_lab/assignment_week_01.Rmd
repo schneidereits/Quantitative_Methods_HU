@@ -1,0 +1,72 @@
+---
+title: "Asignment_Week_01"
+author: "Shawn Schneidereit"
+date: "2.11.2020"
+output: html_document
+---
+
+### 1. Create a vector from a series of numbers:
+
+2;2;2;2;2;2;2;2;2;2;2;8;8;8;8;1;2;3;4;5;6;7;8;9;10;6;5;4;3;2;1;56;56;56;56;8;8;8;8;8
+
+From the above number series construct a vector `x` using the functions `c()`, `rep()` and `seq()`. Note, you MUST use all three functions! Read the slides from the lecture carefully to answer the questions.
+
+```{r}
+x <- c(rep(2, times = 11), 8, 8, 8, 8)
+
+```
+
+### 2. How many elements has vector `x`?
+
+```{r}
+x <- c(2,2,2,2,2,2,2,2,2,2,2,8,8,8,8,1,2,3,4,5,6,7,8,9,10,6,5,4,3,2,1,56,56,56,56,8,8,8,8,8)
+
+```
+
+### 3. Extract the 12th element from vector `x`.
+
+```{r}
+
+```
+
+### 4. Extract the elements 20-27 from vector `x`.
+
+```{r}
+
+```
+
+### 5. Extract the 12th and 20-27th element from vector `x`.
+
+```{r}
+
+```
+
+### 6. Extract all but the 5th element from vector `x` and assign the new vector to a variable `y`. Print the content of `y`.
+
+```{r}
+
+```
+
+### 7. Write a logical expression that assesses for each element `i` in vector `x` whether `i` is equal to `56`. The result should be a logical vector of `TRUE`s and `FALSE`s that has the same number of elements as `x`.
+
+```{r}
+
+```
+
+### 8. Use the logical expression to replace all values `56` in vector `x` with the value `52`. Print the content of `x`.
+
+```{r}
+
+```
+
+### 9. Replace all elements in vector `x` that are less than `5` or greater than `50` with the value `NA`. Use a logical expression, and print the result.
+
+```{r}
+
+```
+
+### 10. Add `5` to each element in vector `x`.
+
+```{r}
+
+```

@@ -1,0 +1,6 @@
+layer,code,name,reference
+1,awc,Available Water Capacity,Ballabio et al. (2016)
+2,bd,Bulk density,Ballabio et al. (2016)
+3,cec,Cation Exchange Capacity,Ballabio et al. (2019)
+4,cn,C:N ratio,Ballabio et al. (2019)
+5,ph,pH of soil water,Ballabio et al. (2019)
