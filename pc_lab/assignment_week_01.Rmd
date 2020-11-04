@@ -1,5 +1,5 @@
 ---
-title: "Assignment_Week_01"
+title: "Asignment Week 1"
 author: "Shawn Schneidereit"
 date: "2.11.2020"
 output: html_document
@@ -56,13 +56,19 @@ y
 ### 7. Write a logical expression that assesses for each element `i` in vector `x` whether `i` is equal to `56`. The result should be a logical vector of `TRUE`s and `FALSE`s that has the same number of elements as `x`.
 
 ```{r}
-# technically we did not cover this in the lecture, but this is the most efficient way to do it in base R. 
+x == 56
+
+# technically we did not cover this in the lecture, but this is a ifelse statement approach
 ifelse(x == 56, TRUE, FALSE)
 ```
 
 ### 8. Use the logical expression to replace all values `56` in vector `x` with the value `52`. Print the content of `x`.
 
 ```{r}
+x[x == 56] <- 52
+x
+
+# technically we did not cover this in the lecture, but this is a ifelse statement approach
 ifelse(x == 56, 52, x)
 x
 ```
@@ -70,6 +76,11 @@ x
 ### 9. Replace all elements in vector `x` that are less than `5` or greater than `50` with the value `NA`. Use a logical expression, and print the result.
 
 ```{r}
+
+x[x < 5 | x > 50] <- NA
+x
+
+# technically we did not cover this in the lecture, but this is a ifelse statement approach
 ifelse(x < 5 | x > 50, NA, x)
 x
 ```
@@ -78,4 +89,5 @@ x
 
 ```{r}
 x + 5
+x
 ```
