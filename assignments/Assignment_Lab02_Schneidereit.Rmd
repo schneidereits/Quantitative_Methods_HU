@@ -91,6 +91,38 @@ length(airquality["Ozone" > 50])  # answer: 81
 Convert column `Month` (numeric) to a factor using the months names as factor labels ("May", "June", ...).
 
 ```{r}
+
+# here is the far more efficient tidyverse solution
+library(tidyverse)
+
+mutate(PLOT = case_when(SUBSITE == "HE" & PLOT == 1 ~ 1,
+                          SUBSITE == "HE" & PLOT == 2 ~ 2,
+                          SUBSITE == "HE" & PLOT == 3 ~ 3,
+                          SUBSITE == "HE" & PLOT == 4 ~ 4,
+                          SUBSITE == "HE" & PLOT == 5 ~ 5,
+                          SUBSITE == "HE" & PLOT == 6 ~ 6,
+                          SUBSITE == "KO" & PLOT == 1 ~ 6,
+                          SUBSITE == "KO" & PLOT == 2 ~ 5,
+                          SUBSITE == "KO" & PLOT == 3 ~ 4,
+                          SUBSITE == "KO" & PLOT == 4 ~ 3,
+                          SUBSITE == "KO" & PLOT == 5 ~ 2,
+                          SUBSITE == "KO" & PLOT == 6 ~ 1))
+  
+
+airquality <- airquality %>% 
+  mutate(Month = case_when(Month == 5 ~ "May",
+                           Month == 6 ~ "June",
+                           Month == 7 ~ "July",
+                           Month == 8 ~ "August",
+                           Month == 9 ~ "September"),
+         Month = as.factor(Month),
+         Date = paste(Month, Day, sep = "-"),
+         Temp.C = round((Temp - 32)/1.8, digits = 2),
+         Wind.ms = round((Wind / 2.237), digits = 2))  # divide by 2.237 to convert to mph to m/s
+
+
+# fresh start now in base R...
+
 airquality <- read_csv("~/Documents/humbolt/quantitative_methods/pc_lab/data/airquality_output.csv")
 
 
