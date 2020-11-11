@@ -5,6 +5,8 @@ date: "11.11.2020"
 output: html_document
 ---
 
+## **note** that the .Rmd can be found on my [personal repo](https://github.com/schneidereits/Quantitative_Methods_HU/blob/main/pc_lab/assignment_week_01.Rmd) for the corse
+
 ### Steps to complete your assignment:
 
 1. Complete the tasks. Write your R code in the designated areas (you can send the code to the console to test your code).
@@ -94,21 +96,7 @@ Convert column `Month` (numeric) to a factor using the months names as factor la
 
 # here is the far more efficient tidyverse solution
 library(tidyverse)
-
-mutate(PLOT = case_when(SUBSITE == "HE" & PLOT == 1 ~ 1,
-                          SUBSITE == "HE" & PLOT == 2 ~ 2,
-                          SUBSITE == "HE" & PLOT == 3 ~ 3,
-                          SUBSITE == "HE" & PLOT == 4 ~ 4,
-                          SUBSITE == "HE" & PLOT == 5 ~ 5,
-                          SUBSITE == "HE" & PLOT == 6 ~ 6,
-                          SUBSITE == "KO" & PLOT == 1 ~ 6,
-                          SUBSITE == "KO" & PLOT == 2 ~ 5,
-                          SUBSITE == "KO" & PLOT == 3 ~ 4,
-                          SUBSITE == "KO" & PLOT == 4 ~ 3,
-                          SUBSITE == "KO" & PLOT == 5 ~ 2,
-                          SUBSITE == "KO" & PLOT == 6 ~ 1))
   
-
 airquality <- airquality %>% 
   mutate(Month = case_when(Month == 5 ~ "May",
                            Month == 6 ~ "June",
