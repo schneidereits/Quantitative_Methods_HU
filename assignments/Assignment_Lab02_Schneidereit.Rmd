@@ -1,7 +1,7 @@
 ---
 title: "Assignment Lab Session 2"
-author: "Alexander von Humboldt"
-date: "6.5.1859"
+author: "Shawn Schneidereit"
+date: "11.11.2020"
 output: html_document
 ---
 
@@ -20,30 +20,39 @@ Convert vector x into a matrix m with 5 rows und 8 columns.
 ```{r}
 x <- c(2,2,2,2,2,2,2,2,2,2,2,8,8,8,8,1,2,3,4,5,6,7,8,9,10,6,5,4,3,2,1,56,56,56,56,8,8,8,8,8)
 
+m <- matrix(x, nrow = 5, ncol = 8)
+
+m
 ```
 
 Extract the third column from matrix m.
 
 ```{r}
+m[,3]
 
 ```
 
 From matrix m, extract the element from the fourth row and second column.
 
 ```{r}
+m[4,2]
+
 
 ```
 
 From matrix m, extract the 7ths and 8ths column.
 
 ```{r}
+m[,7:8]
+
 
 ```
 
 Convert matrix m into a data.frame names 'mm' and extract the 3rd column
 
 ```{r}
-
+mm <- data.frame(m)
+mm[,3]
 ```
 
 ### 2. Data frames (2 Points)
@@ -51,7 +60,8 @@ Convert matrix m into a data.frame names 'mm' and extract the 3rd column
 Download the airquality data set from Moodle and import it into R.
 
 ```{r}
-
+library(readr)
+airquality <- read_csv("pc_lab/data/airquality_output.csv")
 ```
 
 Answer the following questions:
