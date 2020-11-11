@@ -61,7 +61,7 @@ Download the airquality data set from Moodle and import it into R.
 
 ```{r}
 library(readr)
-airquality <- read_csv("pc_lab/data/airquality_output.csv")
+airquality <- read_csv("~/Documents/humbolt/quantitative_methods/pc_lab/data/airquality_output.csv")
 ```
 
 Answer the following questions:
@@ -71,6 +71,18 @@ Answer the following questions:
 - How many days had an ozone concentration greater than 50 ppm?
 
 ```{r}
+# What is the concentration of ozone on May 20th?
+# may 20th = month 5, day 20; found in row 20
+airquality[20, "Ozone"] # answer: 11
+
+
+# What is the mean temperature on July 16th?
+# july 16 = month 7, day 20; found in row 77
+airquality[77, "Temp"] # answer: 81
+
+
+# How many days had an ozone concentration greater than 50 ppm?
+length(airquality["Ozone" > 50])  # answer: 81
 
 ```
 
@@ -79,25 +91,41 @@ Answer the following questions:
 Convert column `Month` (numeric) to a factor using the months names as factor labels ("May", "June", ...).
 
 ```{r}
+airquality <- read_csv("~/Documents/humbolt/quantitative_methods/pc_lab/data/airquality_output.csv")
+
+
+airquality$Month[airquality$Month == 5] <- "May"
+airquality$Month[airquality$Month == 6] <- "June"
+airquality$Month[airquality$Month == 7] <- "July"
+airquality$Month[airquality$Month == 8] <- "August"
+airquality$Month[airquality$Month == 9] <- "September"
+airquality$Month <- as.factor(airquality$Month)
+
 
 ```
 
 Use the function `paste()` to create a new column called 'Date' of the following format: 'Month-Day', 'May-1', 'May-2', 'May-3', ...
 
 ```{r}
+airquality$Date <- paste(airquality$Month, airquality$Day, sep = "-")
 
 ```
 
 Create two new variables ('Temp.C' and 'Wind.ms') that show temperature in Celsius and wind speed in m/s (instead of Fahrenheit und mph). Show the first five records for each new variable.
 
 ```{r}
+airquality$Temp.C <- round((airquality$Temp - 32)/1.8, digits = 2)
+
+airquality$Wind.ms <- airquality$Wind / 2.237 # divide by 2.237 to convert to mph to m/s
+
+head(airquality[,c("Temp.C", "Wind.ms")])
 
 ```
 
 Write the data to a file called 'airquality2.csv' using csv format.
 
 ```{r}
-
+write_csv(airquality, path = "~/Documents/humbolt/quantitative_methods/pc_lab/data/airquality2.csv")
 ```
 
 ### 4. Loading new data (3 points)
@@ -107,18 +135,19 @@ Download the dataset 'treering.csv' from Moodle. Inspect it in either Excel or a
 The dataset contains the width of treerings measures at several plots.
 
 ```{r}
-
+treering <- read_csv("~/Documents/humbolt/quantitative_methods/pc_lab/data/treering.csv")
 ```
 
 Drop all rows containing at least one `NA` value.
 
 ```{r}
-
+treering <- na.omit(treering)
 ```
 
 What is the mean tree-ring width for plot X40B?
 
 ```{r}
+mean(treering$X_40_B) # answer 1.221236
 
 ```
 
