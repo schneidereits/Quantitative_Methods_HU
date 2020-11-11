@@ -185,7 +185,7 @@ summary {
 
 
 <div id="note-that-the-.rmd-can-be-found-on-my-personal-repo-for-the-corse" class="section level2">
-<h2><strong>note</strong> that the .Rmd can be found on my <a href="https://github.com/schneidereits/Quantitative_Methods_HU/blob/main/pc_lab/assignment_week_01.Rmd">personal repo</a> for the corse</h2>
+<h2><strong>note</strong> that the .Rmd can be found on my <a href="https://github.com/schneidereits/Quantitative_Methods_HU/tree/main/assignments">personal repo</a> for the corse</h2>
 <div id="steps-to-complete-your-assignment" class="section level3">
 <h3>Steps to complete your assignment:</h3>
 <ol style="list-style-type: decimal">
@@ -266,23 +266,15 @@ airquality[77, &quot;Temp&quot;] # answer: 81</code></pre>
 ##   &lt;dbl&gt;
 ## 1    81</code></pre>
 <pre class="r"><code># How many days had an ozone concentration greater than 50 ppm?
-length(airquality[&quot;Ozone&quot; &gt; 50])  # answer: 81</code></pre>
+length(airquality[&quot;Ozone&quot; &gt; 50])  # answer: 8</code></pre>
 <pre><code>## [1] 8</code></pre>
 </div>
 <div id="manipulate-data-3-points" class="section level3">
 <h3>3. Manipulate data (3 Points)</h3>
 <p>Convert column <code>Month</code> (numeric) to a factor using the months names as factor labels (“May”, “June”, …).</p>
 <pre class="r"><code># here is the far more efficient tidyverse solution
-library(tidyverse)</code></pre>
-<pre><code>## ── Attaching packages ─────────────────────────────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
-<pre><code>## ✓ ggplot2 3.3.0     ✓ dplyr   0.8.4
-## ✓ tibble  3.0.1     ✓ stringr 1.4.0
-## ✓ tidyr   1.0.2     ✓ forcats 0.4.0
-## ✓ purrr   0.3.3</code></pre>
-<pre><code>## ── Conflicts ────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()</code></pre>
-<pre class="r"><code>airquality &lt;- airquality %&gt;% 
+  
+airquality &lt;- airquality %&gt;% 
   mutate(Month = case_when(Month == 5 ~ &quot;May&quot;,
                            Month == 6 ~ &quot;June&quot;,
                            Month == 7 ~ &quot;July&quot;,

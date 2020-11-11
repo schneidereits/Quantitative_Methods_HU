@@ -5,7 +5,7 @@ date: "11.11.2020"
 output: html_document
 ---
 
-## **note** that the .Rmd can be found on my [personal repo](https://github.com/schneidereits/Quantitative_Methods_HU/blob/main/pc_lab/assignment_week_01.Rmd) for the corse
+## **note** that the .Rmd can be found on my [personal repo](https://github.com/schneidereits/Quantitative_Methods_HU/tree/main/assignments) for the corse
 
 ### Steps to complete your assignment:
 
@@ -13,6 +13,10 @@ output: html_document
 2. Create an HTML file in R-Studio: | Menu | File | Knit Document (alternatively: little Knit button in script header)
 3. RENAME your html file to "Assignment_Lab02_YourLastName.html" (replace your last name)
 4. Upload your assignment (.html file) to Moodle
+
+```{r, include= FALSE}
+library(tidyverse)
+```
 
 
 ### 1. Matrices (2 Points)
@@ -84,7 +88,7 @@ airquality[77, "Temp"] # answer: 81
 
 
 # How many days had an ozone concentration greater than 50 ppm?
-length(airquality["Ozone" > 50])  # answer: 81
+length(airquality["Ozone" > 50])  # answer: 8
 
 ```
 
@@ -95,7 +99,6 @@ Convert column `Month` (numeric) to a factor using the months names as factor la
 ```{r}
 
 # here is the far more efficient tidyverse solution
-library(tidyverse)
   
 airquality <- airquality %>% 
   mutate(Month = case_when(Month == 5 ~ "May",
