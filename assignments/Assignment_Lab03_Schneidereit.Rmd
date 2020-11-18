@@ -1,9 +1,11 @@
 ---
 title: "Assignment Lab Session 3"
-author: "Alexander von Humboldt"
-date: "6.5.1859"
+author: "Shawn Schneidereit"
+date: "18.11.2020"
 output: html_document
 ---
+
+## **note** that the .Rmd can be found on my [personal repo](https://github.com/schneidereits/Quantitative_Methods_HU/tree/main/assignments) for the corse
 
 ### Steps to complete your assignment:
 
@@ -12,18 +14,40 @@ output: html_document
 3. RENAME your html file to "Assignment_Lab03_YourLastName.html" (replace your last name)
 4. Upload your assignment (.html file) to Moodle
 
+```{r, include= FALSE}
+library(tidyverse)
+library(readr)
+library(viridis)
+```
 
 ### 1. Plotting the airquality dataset (2 points)
 
 Create a scatter-plot showing the relationship between temperature, solar radiation and wind speed. Briefly describe what you see.
 
 ```{r}
+airquality <- read_csv("~/Documents/humbolt/quantitative_methods/pc_lab/data/airquality_output.csv")
+
+plot(airquality$Solar, airquality$Wind)
+
+ggplot(airquality, aes(Temp, Solar, color = Wind, size = Wind)) +
+  geom_point() +
+  stat_smooth(method = lm) +
+scale_colour_viridis_c() +
+  theme_classic()
+
+#In this plot I see that there is no visually decernabily trend between solar radiation and tempurature. There seems to be stronger winds at low temperatures and solar radiation also seem to be less variable at higher temperatures than at lower temperatures.
 
 ```
 
 Create a scatterplot showing the relationship between ozone concentration and temperature for each month. Briefly describe what you see.
 
 ```{r}
+
+ggplot(airquality, aes(log(Ozone), Temp, color = Month)) +
+  geom_point() +
+  scale_colour_viridis_c() +
+  stat_smooth(method = lm) +
+  theme_classic()
 
 ```
 
@@ -50,6 +74,8 @@ In Moodle, you'll find an example plot 'treering_example.pdf' showing time serie
 **NOTE:** In markdown it might be necessary to index the namespace of some functions. In prticular, `dplyr::select()` and `dplyr::filter()` might fail knitting if the namespace is not defined.
 
 ```{r}
+treering <- read_csv("~/Documents/humbolt/quantitative_methods/pc_lab/data/treering.csv")
+
 
 ```
 
