@@ -31,11 +31,11 @@ plot(airquality$Solar, airquality$Wind)
 
 ggplot(airquality, aes(Temp, Solar, color = Wind, size = Wind)) +
   geom_point() +
-  stat_smooth(method = lm) +
+  stat_smooth(method = lm) + # Add linear regression with trend line to help visualize trend between radiaiton and temp
 scale_colour_viridis_c() +
   theme_classic()
 
-#In this plot I see that there is no visually decernabily trend between solar radiation and tempurature. There seems to be stronger winds at low temperatures and solar radiation also seem to be less variable at higher temperatures than at lower temperatures.
+#In this plot I see that there is a slight visually decernabily positive trend between solar radiation and tempurature. There also seems to be stronger winds at low temperatures and solar radiation also seem to be less variable at higher temperatures than at lower temperatures.
 
 ```
 
@@ -45,9 +45,21 @@ Create a scatterplot showing the relationship between ozone concentration and te
 
 ggplot(airquality, aes(log(Ozone), Temp, color = Month)) +
   geom_point() +
-  scale_colour_viridis_c() +
-  stat_smooth(method = lm) +
+  scale_colour_viridis_c() + 
+  stat_smooth(method = lm) + # Add linear regression with trend line to help visualize trend between temp and ozone
   theme_classic()
+
+# I can see that there is a strong positve trend between tempurate and ozone. note that ozone is on a log transformed scale
+# and thus small increases at high tempuratures correspond with portotinally very large increases in measured    
+# ozone. There is also a trend that summer months (7-8) have both higher temperatures and ozone levels. 
+
+# code with month as a factor, but it essentially looks the same, aside from the linear regression being applied individually
+# to each month
+#ggplot(airquality, aes(log(Ozone), Temp, color = factor(Month))) +
+#  geom_point() +
+#  scale_colour_viridis_d() +
+# stat_smooth(method = lm) +
+#  theme_classic()
 
 ```
 
@@ -57,11 +69,29 @@ Transform the airquality dataset into long-format, with a key column indicating 
 
 ```{r}
 
+airquality_long <- gather(airquality, key = measurment, value = )
+
+airquality_long <- airquality %>% 
+  select(-X1) %>% 
+    pivot_longer(-(c(1,6:7)), names_to = "measurment", values_to = "value") 
+
+
 ```
 
 Use the transformed dataset to simultaneously visualize the trend of ozone concentration, temperature, wind speed, and solar radiation over time. Hint: The ID column gives you a sequential index of measurement!
 
 ```{r}
+
+source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
+
+
+ggplot(airquality_long, aes(Month, value, color = factor(Month))) +
+  geom_point() +
+   scale_colour_viridis_d() +
+  geom_boxplot() +
+  
+  facet_wrap(.~measurment, scales = "free") +
+  theme_classic()
 
 ```
 
