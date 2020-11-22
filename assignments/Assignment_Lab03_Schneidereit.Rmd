@@ -82,14 +82,10 @@ Use the transformed dataset to simultaneously visualize the trend of ozone conce
 
 ```{r}
 
-source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
-
-
 ggplot(airquality_long, aes(Month, value, color = factor(Month))) +
   geom_point() +
    scale_colour_viridis_d() +
-  geom_boxplot() +
-  
+  geom_boxplot(notch = T) +
   facet_wrap(.~measurment, scales = "free") +
   theme_classic()
 
@@ -106,6 +102,17 @@ In Moodle, you'll find an example plot 'treering_example.pdf' showing time serie
 ```{r}
 treering <- read_csv("~/Documents/humbolt/quantitative_methods/pc_lab/data/treering.csv")
 
+treering_long <- treering %>% 
+  gather(key = ID, value = increment_mm, 1:56) %>% 
+  drop_na() %>% 
+  mutate(subplot = if_else(grepl("A", ID), "A", "B")) %>%  # if ID string contains A then subplot = A, else B
+  dplyr::filter(grepl("40", ID)) # filter ID for rows that contain 40
+  
+
+ggplot(treering_long, aes(Year, increment_mm, group = subplot, color = subplot)) +
+  geom_line() +
+  theme_classic()
+  
 
 ```
 
@@ -113,11 +120,25 @@ Following, calculate the mean and standard deviation of increment for each dendr
 
 ```{r}
 
+# same wrangling expect data is not filtered for plot 40
+treering_sum <- treering %>% 
+  gather(key = ID, value = increment_mm, 1:56) %>% 
+  drop_na() %>% 
+  mutate(subplot = if_else(grepl("A", ID), "A", "B")) %>% 
+  group_by(ID) %>% 
+  summarise(mean = mean(increment_mm),
+            sd = sd(increment_mm))
+
+head(treering_sum)
+ 
+
 ```
 
 Which plot has the highest/lowest increment?
 
 ```{r}
+treering_sum %>% arrange(-mean) # hihgest increment, plot X-50_A with 2.04
+treering_sum %>% arrange(mean) # lowest increment, plot X_14_A with 0.48
 
 ```
 
