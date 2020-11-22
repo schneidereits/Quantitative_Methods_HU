@@ -27,8 +27,6 @@ Create a scatter-plot showing the relationship between temperature, solar radiat
 ```{r}
 airquality <- read_csv("~/Documents/humbolt/quantitative_methods/pc_lab/data/airquality_output.csv")
 
-plot(airquality$Solar, airquality$Wind)
-
 ggplot(airquality, aes(Temp, Solar, color = Wind, size = Wind)) +
   geom_point() +
   stat_smooth(method = lm) + # Add linear regression with trend line to help visualize trend between radiaiton and temp
@@ -75,6 +73,8 @@ airquality_long <- airquality %>%
   select(-X1) %>% 
     pivot_longer(-(c(1,6:7)), names_to = "measurment", values_to = "value") 
 
+head(airquality_long)
+
 
 ```
 
@@ -88,6 +88,7 @@ ggplot(airquality_long, aes(Month, value, color = factor(Month))) +
   geom_boxplot(notch = T) +
   facet_wrap(.~measurment, scales = "free") +
   theme_classic()
+
 
 ```
 
