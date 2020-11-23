@@ -33,7 +33,7 @@ ggplot(airquality, aes(Temp, Solar, color = Wind, size = Wind)) +
 scale_colour_viridis_c() +
   theme_classic()
 
-#In this plot I see that there is a slight visually decernabily positive trend between solar radiation and tempurature. There also seems to be stronger winds at low temperatures and solar radiation also seem to be less variable at higher temperatures than at lower temperatures.
+#In this plot I see that there is a slight visually decernabily positive trend, with large standard error between solar radiation and tempurature. There also seems to be stronger winds at low temperatures and solar radiation also seem to be less variable at higher temperatures than at lower temperatures.
 
 ```
 
@@ -138,8 +138,11 @@ head(treering_sum)
 Which plot has the highest/lowest increment?
 
 ```{r}
-treering_sum %>% arrange(-mean) # hihgest increment, plot X-50_A with 2.04
-treering_sum %>% arrange(mean) # lowest increment, plot X_14_A with 0.48
+treering_sum %>% arrange(-mean) %>% 
+  slice(1) # highest increment, plot X-50_A with 2.04
+
+treering_sum %>% arrange(mean) %>% # lowest increment, plot X_14_A with 0.48
+  slice(1)
 
 ```
 
