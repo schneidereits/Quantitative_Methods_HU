@@ -1,0 +1,126 @@
+---
+title: "Assignment 4"
+author: "Shawn Schneideriet"
+date: "25.11.2020"
+output: html_document
+---
+
+## **note** that the .Rmd can be found on my [personal repo](https://github.com/schneidereits/Quantitative_Methods_HU/tree/main/assignments) for the corse
+
+### Steps to complete your assignment:
+
+1. Complete the tasks. Write your R code in the designated areas (you can send the code to the console to test your code).
+2. Create an HTML file in R-Studio: | Menu | File | Knit Document (alternatively: little Knit button in script header)
+3. RENAME your html file to "Assignment_Lab04_YourLastName.html" (replace your last name)
+4. Upload your assignment (.html file) to Moodle
+
+```{r, include= FALSE}
+library(tidyverse)
+library(readr)
+library(viridis)
+library(ggeffects)
+```
+
+### 1. Build a hypothesis for the airquality data (1 points)
+
+Suppose you are tasked to analyze how the variability in near-surface ozone concentrations in New York is associated with local variations in weather conditions. With the airquality data set, plot ozone concentration (ppb) versus temperature (degrees F). Based on the observed relationship, phrase a plausible (!) research hypothesis. Think about which variable to plot on the x- and y-axes.
+
+```{r}
+airquality <- read_csv("~/Documents/humbolt/quantitative_methods/pc_lab/data/airquality_output.csv")
+
+ggplot(airquality, aes(Temp, log(Ozone))) +
+  geom_point() +
+  theme_classic()
+
+# Near-surface will significantly affect observed ozone concentration, with progressive increases in temperature corresponding with higher ozone concentration
+
+```
+
+
+### 2. Fit a linear model to the airquality data (3 points)
+
+Fit a simple linear regression model using ordinary-least-squares regression between ozone concentration and temperature to analyze the effect of temperature on ozone. Briefly answer the following questions: (1) How does ozone concentration change with Temperature? (2) Is the effect of temperature on ozone concentration significant? (3) How much of the variance in ozone concentration is explained by temperature alone? Show how you obtained the results with R?
+
+```{r}
+
+m1 <- lm(data = airquality, Ozone ~ Temp) 
+
+summary(m1)
+
+# 1) Temperature has a positve effect on ozone conentration, with a 1 degree F increase in temp resulting in a 2.43 ppb increase in ozone
+# 2) Yes the observed effect of tempurature on ozone is observed to be significant as p< 0.05 and the std. error is being relatively small when compaired to the slope (effect size)
+# 3) ~48 percent of the total variance is explained by tempurature alone. This is observed in the adjusted R-squared value found in the summary table
+
+```
+
+
+### 3. Plot the regression (2 Points)
+
+Create a plot showing the fitted relationship between temperature and ozone concentration. Also show uncertainties in the regression line caused by uncertainty in the parameter estimates (confidence interval).
+
+```{r}
+
+
+ggpredict(m1, terms = c("Temp"), type = "fe", ci.lvl = 0.95) %>%  # type = fe(fixed effect) because model is non-hirearcical
+  plot(rawdata = TRUE) +
+  theme_classic()
+
+
+```
+
+### 4. Model diagnostics (3 Points)
+
+Create two residual plots for the model: 1) a qq-plot and 2) a scatter-plot of fitted values versus residuals. Do the residuals look normal and properly distributed? Answer the question in 2-3 sentences.
+
+```{r} 
+
+ggplot(airquality, aes(sample = resid_standard)) +
+      stat_qq() +
+      geom_abline(intercept = 0, slope = 1)
+
+plot(m1)
+
+qqnorm(resid(m1)) +
+qqline(resid(m1)) 
+
+```
+
+
+### 5. Transforming the response (3 Points in total, each part 1 point)
+
+5.1 Create a new column 'logOzone' in the airquality dataset by calculating the natural logarithm of Ozone concentration. Following, fit a model explaining the logarithm of ozone concentration by temperature.
+
+```{r}
+
+airquality <- airquality %>% 
+  mutate(logOzone = log(Ozone))
+
+m2 <- lm(data = airquality, logOzone ~ Temp)
+
+summary(m2)
+
+```
+
+5.2 Check the residuals of the model. Do they look different/better/worse than for the previous model?
+
+```{r}
+plot(m2)
+```
+
+
+5.3 Plot the regression line of the logged model (without confidence intervals). You can either plot it in log-space (using the logged ozone concentrations) or back-transform the logged ozone concentrations into linear space using the exp() function (recall: exp(log(x)) = x).
+
+```{r}
+
+ggpredict(m2, terms = c("Temp"), type = "fe", ci.lvl = F) %>%  # type = fe(fixed effect) because model is non-hirearcical
+  plot(rawdata = TRUE) + 
+  theme_classic()
+
+# here is a secound graph with the y scale on a exponential cordinate system to help visualize the relationship between ozone and tempurature
+ggpredict(m2, terms = c("Temp"), type = "fe", ci.lvl = F) %>%  # type = fe(fixed effect) because model is non-hirearcical
+  plot(rawdata = TRUE) + 
+  coord_trans(y = "exp")
+  theme_classic()
+
+```
+
