@@ -73,16 +73,9 @@ ggpredict(m1, terms = c("Temp"), type = "fe", ci.lvl = 0.95) %>%  # type = fe(fi
 Create two residual plots for the model: 1) a qq-plot and 2) a scatter-plot of fitted values versus residuals. Do the residuals look normal and properly distributed? Answer the question in 2-3 sentences.
 
 ```{r} 
+plot(m1) # bottom row can be ignored 
 
-ggplot(airquality, aes(sample = resid_standard)) +
-      stat_qq() +
-      geom_abline(intercept = 0, slope = 1)
-
-plot(m1)
-
-qqnorm(resid(m1)) +
-qqline(resid(m1)) 
-
+ # The data have slight irregularities that do not make it look normal and properley distributed. while the in residual vs fitted plot the data points mostly appear to be spread out about the line, there is a discernible trend in the middle section of the line, with a slight downward deviation. The Q-Q plot shows that the data has a heaver upper tale and that data points with larger values have a positve deviation from what is to be expected under the standard modelling assumption.
 ```
 
 
@@ -105,6 +98,10 @@ summary(m2)
 
 ```{r}
 plot(m2)
+
+# The residuals of the model do look different, but visually are only marginally better, as only deviaitons on the high end were resolved. The previously described negative dip in the middle of the residual vs fitted plot in smaller in magnitude, but new a positve skew is now observed on points on the low end. the QQ plot no longer has heaver upper tale, but now a ligher lower tail is seen, meaning that data points with smaller values have a slight negative deviaiton from what is to be expected under the standard modelling assumption.
+
+
 ```
 
 
@@ -116,10 +113,10 @@ ggpredict(m2, terms = c("Temp"), type = "fe", ci.lvl = F) %>%  # type = fe(fixed
   plot(rawdata = TRUE) + 
   theme_classic()
 
-# here is a secound graph with the y scale on a exponential cordinate system to help visualize the relationship between ozone and tempurature
+# here is a second graph with the y scale on a exponential cordinate system to help visualize the relationship between ozone and tempurature
 ggpredict(m2, terms = c("Temp"), type = "fe", ci.lvl = F) %>%  # type = fe(fixed effect) because model is non-hirearcical
   plot(rawdata = TRUE) + 
-  coord_trans(y = "exp")
+  coord_trans(y = "exp") +
   theme_classic()
 
 ```

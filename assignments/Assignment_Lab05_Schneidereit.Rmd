@@ -1,0 +1,125 @@
+---
+title: "Assignment 5"
+author: "Shawn Schneidereit"
+date: "2.12.2020"
+output: html_document
+---
+
+## **note** that the .Rmd can be found on my [personal repo](https://github.com/schneidereits/Quantitative_Methods_HU/tree/main/assignments) for the corse
+
+### Steps to complete your assignment:
+
+1. Complete the tasks. Write your R code in the designated areas (you can send the code to the console to test your code).
+2. Create an HTML file in R-Studio: | Menu | File | Knit Document (alternatively: little Knit button in script header)
+3. RENAME your html file to "Assignment_Lab05_YourLastName.html" (replace your last name)
+4. Upload your assignment (.html file) to Moodle
+
+## Does the diving time of cormorants differ with season and subspecies? 
+
+A team of researchers has tracked the seasonal diving time of two sub-species of cormorants (Phalocrocorax carbo). The sub-species are Phalocrocorax carbo carbo and Phalocrocorax carbo sinensis. You're asked to analyze whether there are significant differences in diving time between the two sub-species, as well as between seasons.
+
+
+```{r, include= FALSE}
+library(tidyverse)
+library(readr)
+library(viridis)
+library(ggeffects)
+```
+
+## 1) Import and visualize the data (3 points)
+
+Import the cormorant dataset (cormorant.txt). The dataset contains diving times (seconds) for two subspecies of Phalocrocorax carbo (subspecies carbo and sinensis). Subspecies are codes C and S. Create one boxplot of the diving times by season and one boxplot of the diving times by subspecies. The seasons are coded numerically as follows: 1 (Spring), 2 (Summer), 3 (Autumn), and 4 (Winter).
+
+```{r}
+
+cormorant <- read_csv("~/Documents/humbolt/quantitative_methods/pc_lab/data/cormorant.txt")
+
+# rename seasons for convience
+cormorant <- cormorant %>% 
+   mutate(season = case_when(season == 1 ~ "spring",
+                           season == 2 ~ "summer",
+                           season == 3 ~ "autumn",
+                           season == 4 ~ "winter"))
+
+# divetime by season
+ggplot(cormorant, aes(season, divingtime, color = season)) +
+  geom_boxplot() +
+  geom_hline(yintercept = mean(cormorant$divingtime), linetype = "dashed") + 
+  scale_colour_viridis_d() +
+  theme_classic()
+
+# divetime by subspecies
+ggplot(cormorant, aes(subspecies, divingtime, color = subspecies)) +
+  geom_boxplot() +
+   geom_hline(yintercept = mean(cormorant$divingtime), linetype = "dashed") + 
+  scale_colour_viridis_d() +
+  theme_classic()
+
+
+```
+
+
+### 2) Test for variance homogeneity. Describe your findings in one sentence. (2 points)
+
+```{r}
+bartlett.test(data = cormorant, divingtime ~ season)
+
+# There is no strong evidence that indicates a rejection of the null hyprhesis (as p > 0.05), so it is assumed that there homogeneity in the variance between the seasons.
+
+```
+
+
+### 3) Test the signficance of the effects of season and sub-species on diving time. Describe your findings in two sentences. (2 points)
+
+```{r}
+aov <- aov(data = cormorant, divingtime ~ season + subspecies)
+summary(aov)
+
+# Using an ANOVA model I found that divinging time is significantly different both between seasons and between subspieces. Seasonality accounts for the majority of the variance in diving time as it relatively has a large sum of squares (756), while subspieces accounts for less of the variance in diving time with a relatively smaller sum of squares (107). 
+
+```
+
+
+### 4) Visually check the model assumptions (homoskedasticity and normality of residuals). Describe your findings in two sentences. (2 points)
+
+```{r}
+plot(aov)
+
+# When looking at the reiduals vs fitted plot, the residuals seem to be normally distributed, with two larger outlying data points. Simularly when checking the QQ-plot the majority of residulas seem to be normally distributed, with two outlying data points and the high and low end of the distribution.
+
+```
+
+
+### 5) Identify which seasons differ with respect to diving time. Conduct a multiple-comparison test to assess which seasons are significantly different from each other. Describe your findings in 1-2 sentences. (2 points)
+
+```{r}
+TukeyHSD(aov) # subspecies is contained in ANOVA model, but does not prevent using the tukey test to assess between season differences
+
+tukey <- as.data.frame(TukeyHSD(aov)$season)
+tukey$season <- rownames(tukey)
+
+ggplot(tukey, aes(x = season, y = diff, color = season)) + 
+  geom_point() +
+  geom_errorbar(aes(ymin = lwr, ymax = upr), width = 0.25) +
+  geom_hline(yintercept = 0) +
+  labs(x = "season", y = "Differnece in means") +
+  scale_color_viridis_d() +
+  theme_classic()
+
+# Using  Tukey`s honest significant difference method it is seen that cormorant diving time differs significantly between each potential combination of season as all adjusted p-values < 0.05 and when plotted no 95-confidnece intervals cross 0 differnece in means.
+  
+```
+
+
+### 6) Estimate the effect of season and subspecies. Write your findings in 2-3 sentences. (2 points)
+
+```{r}
+m1 <- lm(data = cormorant, divingtime ~ season + subspecies)
+summary(m1)
+
+ggpredict(m1, terms = c("season", "subspecies"), type = "fe", ci.lvl = 0.95) %>%  # type = fe(fixed effect) because model is non-hirearcical
+  plot() +
+  theme_classic()
+
+# As agrement with the previously perfomed ANOVA and Tukey tests, it is found that cormorand diving time differs significantly between each season and between sub spieces. It is estimated that the subspieces Phalocrocorax carbo carbo has a 3.27 secound longer diving time (this effect is constant between all season as the model did not include an interaction factor between subspecies and season). The model estimated that winter diving times were the longest with ~22 & 25 secounds for Phalocrocorax carbo sinensis and Phalocrocorax carbo carbo respectively, while spring diving time were shortest with ~ 10 & 13.5 secounds for Phalocrocorax carbo sinensis and Phalocrocorax carbo carbo respectively
+```
