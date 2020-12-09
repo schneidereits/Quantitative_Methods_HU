@@ -1,0 +1,98 @@
+---
+title: "Assignment 6"
+author: "Shawn Schneidereit"
+date: "09.12.2020"
+output: html_document
+---
+
+## **note** that the .Rmd can be found on my [personal repo](https://github.com/schneidereits/Quantitative_Methods_HU/tree/main/assignments) for the corse
+
+**Exercise:** In an experiment, the diameter of Tetrahymena cells (free-living ciliate protozoa) was measured in cultures of varying cell density and with and without glucose supplement (= additional energy). Using a linear regression approach, analyze the data to address the following questions: (1) Does cell concentration influence cell growth? (2) If so, does the effect vary between cell cultures with glucose supplement and witout?
+
+
+```{r, include= FALSE}
+library(tidyverse)
+library(readr)
+library(viridis)
+library(ggeffects)
+```
+
+## 1. Import and prepare the dataset (1 Point)
+
+The data is on Moodle.
+
+```{r}
+# import with whitespace/tab as deliminaition
+tetrahymena <- read_delim("~/Documents/humbolt/quantitative_methods/pc_lab/data/tetrahymena_zellen.txt", 
+    "\t", escape_double = FALSE, trim_ws = TRUE)
+
+```
+
+## 2. Visualize the data (2 Points)
+
+Create a scatterplot to explore the relationships between concentration, diameter and glucose supplement. Is the relationship linear? If not, how can you correct for it? Hint: Transforming a predictor might help! Briefly describe your thoughts on the relationships and the effects you might expect.
+
+```{r}
+
+ggplot(tetrahymena, aes(concentration, diameter, color = glucose)) +
+  geom_point() +
+  theme_classic()
+
+ggplot(tetrahymena, aes(log(concentration), diameter, color = glucose)) +
+  geom_point() +
+  theme_classic()
+
+tetrahymena <- tetrahymena %>%  mutate(concentration_log = log(concentration))
+
+#The relationship between cell diameter and concentration is not linear, but can be corrected by having concentration on a log scale. Based on the scatter plot I expect that at higher concentrations cell growth is smaller, with cell size proportionally decreasing at lower magnitudes as concentration increases (ie the exponential decay). This is possibly due to less space resulting in constrained cell size before mitosis occures, but there also being biological limits for the minimum size a cell has before it splits. the addition of glucose raises over all cell size at all concentrations, as there is more total enegery available to sustain cell growth. 
+
+```
+
+## 3. Build a simple linear model (2 Points)
+
+Build an appropriate linear model between diameter (response) and concentration (predictor) and visualize it graphically. Assess the assumptions and the goodness-of-fit of the model. Briefly describe your findings.
+
+```{r}
+
+m1 <- lm(data = tetrahymena, diameter ~ (concentration_log)) 
+summary(m1)
+
+plot(m1)
+
+ggpredict(m1, terms = c("concentration_log"), type = "fe", ci.lvl = 0.95) %>%  # type = fe(fixed effect) because model is non-hirearcical
+  plot(rawdata = TRUE) +
+  theme_classic()
+
+# the residerals vs fitted values indicate that the data is normally distibuted. When checking the QQ-plot it is seen that there is a left tail at lower bonds and a right tail at the upper bonds. This is probably due the log transformation of conentration, which relativly deflated low values, while still overestimating upper values (ie the two datapoints from the glucose group). Overall the model accounts for 63% of the observed variation (adj r^2 63.3), and concentration has a negative effect on cell size that is "significant" and has low standard error. 
+
+
+
+```
+
+## 4. Multiple linear model (2 Points)
+
+Now build a multiple linear model by adding glucose as additional predictor interacting with concentration. Compare your model to the previous one based on the AIC. Does including glucose improve the model fit?
+
+```{r}
+m2 <- lm(data = tetrahymena, diameter ~ concentration_log*glucose) 
+summary(m2)
+
+AIC(m1, m2)
+
+# The addition of interaction term between concentration and glucose vastly improves model fit based on AIC. 
+
+```
+
+## 5. Plot the regression lines of the multiple linear model (3 Points)
+
+Plot the regression line for the multiple-regression model, that is one line for each class (glucose/no glucose).
+
+```{r}
+
+ggpredict(m2, terms = c("concentration_log", "glucose"), type = "fe", ci.lvl = 0.95) %>%  # type = fe(fixed effect) because model is non-hirearcical
+  plot(rawdata = TRUE) +
+  theme_classic()
+
+```
+
+
