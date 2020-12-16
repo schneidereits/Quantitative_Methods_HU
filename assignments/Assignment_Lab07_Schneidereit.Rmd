@@ -1,0 +1,77 @@
+---
+title: "Assignment 07"
+author: "Alexander von Humboldt"
+date: "6.5.1859"
+output: html_document
+---
+
+## **note** that the .Rmd can be found on my [personal repo](https://github.com/schneidereits/Quantitative_Methods_HU/tree/main/assignments) for the corse
+
+**Twinkle, twinkle, little Pulsar - the holiday exercise** 
+
+The input data set describes a sample of pulsar candidates collected during the High Time Resolution Universe Survey (South).
+
+Pulsars are a rare type of Neutron star that produce radio emission detectable here on Earth. They are of considerable scientific interest as probes of space-time, the inter-stellar medium, and states of matter. Each pulsar produces a slightly different emission pattern, which varies slightly with each rotation. Thus a potential signal detection known as a 'candidate', is averaged over many rotations of the pulsar, as determined by the length of an observation. In the absence of additional info, each candidate could potentially describe a real pulsar. However in practice almost all detections are caused by radio frequency interference (RFI) and noise, making legitimate signals hard to find.
+
+The data set shared here contains 16,259 spurious examples caused by RFI/noise, and 1,639 real pulsar examples. Each row lists the variables first, and the class label is the final entry. The class labels used are 0 (negative) and 1 (positive). 
+
+The task of this assignment is train a Support Vector Machine classifier to facilitate the automated discrimination of real pulsars and noise.
+
+```{r, include= FALSE}
+library(tidyverse)
+library(readr)
+library(viridis)
+library(ggeffects)
+```
+
+## 1. Import and review the dataset (1 Point)
+
+The HTRU2 data is on Moodle. Prepare overviews of the data set's structure and summary statistics of the individual columns (features).
+Beware: lot's of observations here, keep it short and focused.
+
+```{r}
+HTRU_2 <- read_csv("Documents/humbolt/quantitative_methods/pc_lab/data/HTRU_2.csv", 
+    col_names = FALSE)
+
+
+```
+
+## 2. Create 'test' and 'train' subsets (2 Points)
+
+The test and train subsets should contain 15% and 85% of the data set, respectively. Each subset should include a data frame 'X' with predictors and 'y' with the response variable. Make sure the response variables are converted to factors.
+
+
+```{r}
+
+```
+
+## 3. Feature preparation (2 Points)
+SVM works best with standardized features. Transform the predictors (X) for test and train datasets, so that for each column's mean equals zero and variance equals 1 (Careful, do not standardize the response (y) variables!).
+Check the results by printing summary statistics.
+
+Hint: R has built-in functions for this task.
+```{r}
+
+```
+
+## 4. Train an initial SVM model (3 Points)
+
+Use the train data prepared before to build a SVM model. Assess the model performance in discriminating pulsars pulsars from noise in the test data set using (a) confusion matrix  tables and (b) the portion of correct classfications. Briefly describe your findings.
+
+```{r}
+
+```
+
+
+## 5. Hyperparameter tuning (3 Points)
+
+Try to optimize further the predictive power of the SVM classifier by finding optimal values for the 'cost' and 'gamma' hyperparameters.
+
+Hint: to avoid long processing times, start with few options and relatively large steps for cost and gamma. Then, iteratively add optimize for the most promising value ranges.
+
+Assess the model performance in discriminating pulsars pulsars from noise in the test data set using (a) confusion matrix tables and (b) the portion of correct classifications. Briefly discuss the results in comparison to those from the initial SVM run.
+
+```{r}
+
+
+```
