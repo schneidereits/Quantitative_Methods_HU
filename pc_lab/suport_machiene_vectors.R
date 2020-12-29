@@ -160,6 +160,11 @@ ranges_conf <- list(cost=10^(-1:3), gamma=c(.001,.002,.005,.01,.02,.05,.1,.2,.5,
 svm_tune <- tune(svm, train.x=train_X, train.y=train_y, ranges=ranges_conf)
 print(svm_tune)
 
+svm_tune$performances
+svm_tune$performances %>% arrange(error)
+
+# best model
+
 best_model <- svm_tune$best.model
 print(best_model)
 

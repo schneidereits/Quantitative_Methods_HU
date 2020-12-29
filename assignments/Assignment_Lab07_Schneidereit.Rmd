@@ -19,9 +19,11 @@ The task of this assignment is train a Support Vector Machine classifier to faci
 
 ```{r, include= FALSE}
 library(tidyverse)
+library(dplyr)
 library(readr)
 library(viridis)
 library(ggeffects)
+library(e1071)
 ```
 
 ## 1. Import and review the dataset (1 Point)
@@ -30,8 +32,26 @@ The HTRU2 data is on Moodle. Prepare overviews of the data set's structure and s
 Beware: lot's of observations here, keep it short and focused.
 
 ```{r}
-HTRU_2 <- read_csv("Documents/humbolt/quantitative_methods/pc_lab/data/HTRU_2.csv", 
-    col_names = FALSE)
+HTRU_2 <- read_csv("~/Documents/humbolt/quantitative_methods/pc_lab/data/HTRU_2.csv", 
+    col_names = FALSE) 
+
+str(HTRU_2) # our binary catagory X9 is a numeric
+
+#converting to factor
+#HTRU_2 <- HTRU_2 %>% mutate(X9 == as.factor(X9))
+
+summary(HTRU_2)
+
+HTRU_2_long <- pivot_longer(HTRU_2, 1:8, names_to = "variable")
+
+ggplot(data=HTRU_2_long, aes(x=variable, y=value, color =X9, fill=X9)) +
+  geom_boxplot() +   
+  geom_point(aes(x=variable, y=value, color=X9)) +
+  theme_classic()
+
+# we can clearly see that pulsars (blue data points) tend to clearly cluster for each variable
+
+
 
 
 ```
@@ -43,6 +63,27 @@ The test and train subsets should contain 15% and 85% of the data set, respectiv
 
 ```{r}
 
+pulsar.n <- nrow(HTRU_2)
+
+# Use 15 % of the total data as test data
+test_portion <- 0.15
+test_size <- round(pulsar.n * test_portion)
+test_n <- round(pulsar.n * test_portion)
+train_n <- round(pulsar.n * (1 - test_portion))
+
+test_samples <- sample(nrow(HTRU_2), test_n)
+
+test_df <- HTRU_2[test_samples,]
+train_df <- HTRU_2[-test_samples,]
+
+train_X <- subset(train_df, select = -X9)
+train_y <- as.factor(train_df$X9)
+
+test_X  <- subset(test_df, select = -X9)
+test_y  <- as.factor(test_df$X9)
+
+
+
 ```
 
 ## 3. Feature preparation (2 Points)
@@ -51,6 +92,15 @@ Check the results by printing summary statistics.
 
 Hint: R has built-in functions for this task.
 ```{r}
+# transformating the predictor by centuring and scaling
+train_X <- scale(train_X, center = TRUE, scale = TRUE)
+test_X <- scale(test_X, center = TRUE, scale = TRUE)
+
+summary(train_X)
+summary(test_X)
+
+# looks all good. Both the tain and test predictores have means of 0 and a standard deviation of one
+
 
 ```
 
@@ -59,6 +109,37 @@ Hint: R has built-in functions for this task.
 Use the train data prepared before to build a SVM model. Assess the model performance in discriminating pulsars pulsars from noise in the test data set using (a) confusion matrix  tables and (b) the portion of correct classfications. Briefly describe your findings.
 
 ```{r}
+
+model <- svm(train_X, train_y)
+print 
+
+
+pred_train <- predict(model, train_X)
+pred_test <- predict(model, test_X)
+
+# Confusion matrix table for train data
+table(pred_train, train_y)
+# From our confusion matrix of the training data we can see that 13748 instances of noise where corretly disciminated and 1147 pulsars where correctly identified. There where 72 false positves and 246 false negatives, meaning that 20% of pulsars went undetected 
+
+n_correct <- length(pred_train[pred_train == test_y])
+n_train <- length(pred_train)
+
+paste('Correct [%]: ', n_correct / n_train * 100)
+# overall 85% of the data where correctly identified as noise or actual pulsars
+
+
+# Confusion matrix table for test data
+table(pred_test, test_y)
+# From our confusion matrix of the test (unknown) data we can see that 2428 instances of noise where corretly disciminated and 200 pulsars where correctly identified. There where 11 false positves and 46 false negatives, meaning a majority of pulsars could be detected 
+
+n_correct <- length(pred_test[pred_test == test_y])
+n_test <- length(pred_test)
+
+paste('Correct [%]: ', n_correct / n_test * 100)
+# overall 98% of the data where correctly identified as noise or actual pulsars
+
+# My findings show that overall svm provides an appropriate method to discriminate between pulsars and noise. Overall it was seen that the majortiy of errors where false negatives, meaning that the model was worse at indentifing true siganls and proded conservative estimates of the amount of pulsars. Surprisingly the model performed much better on the test data that is was not trained on.
+
 
 ```
 
@@ -72,6 +153,44 @@ Hint: to avoid long processing times, start with few options and relatively larg
 Assess the model performance in discriminating pulsars pulsars from noise in the test data set using (a) confusion matrix tables and (b) the portion of correct classifications. Briefly discuss the results in comparison to those from the initial SVM run.
 
 ```{r}
+# despite being computationally inefficient, I opted for a slow but straight forward grid search method for optimization. 
+ranges_conf <- list(cost=10^(-1:4), gamma=c(.001,.01,.1,1,2))
 
+svm_tune <- tune(svm, train.x=train_X, train.y=train_y, ranges=ranges_conf)
+print(svm_tune)
+
+# checking and sorting models 
+svm_tune$performances %>% arrange(error)
+
+# best model
+
+best_model <- svm_tune$best.model
+print(best_model) 
+# best four models are:
+# 1) cost=10000, gamma=.001 
+# 2) cost=100, gamma=.01 
+# 3) cost=1000, gamma=.001
+# 4) cost=1, gamma=.1
+# all models where only had a 0.03% difference in their error
+
+# Check the tuned model
+
+pred_best <- predict(best_model, train_X)
+# Confusion matrix table for train data using tuned model
+table(pred_best, train_y)
+# From our confusion matrix of the training data we can see that 13747 instances of noise where corretly disciminated and 1163 pulsars where correctly identified. There where 73 false positves and 230 false negatives. This is a substaintail improvment over the previouses model pulsar dection for the train data
+
+pred_best_test <- predict(best_model, test_X)
+# Confusion matrix table for test data using tuned model
+table(pred_best_test, test_y)
+# From our confusion matrix of the test (unknown) data we can see that 2429 instances of noise where corretly disciminated and 204 pulsars where correctly identified. There where 10 false positves and 42 false negatives. This is only a very marginal improvment when compaired to the previous models performance 
+
+n_correct <- length(pred_best_test[pred_best_test == test_y])
+n_test <- length(pred_best_test)
+
+paste('Correct [%]: ', n_correct / n_test * 100)
+# # as with the previous model, overall 98% of the data where correctly identified as noise or actual pulsars
+
+# overall my results show that hyperparameter optimization did not yield further improvments in the discriminatation between noise and pulsars. Based on my large grid search, a wide range of potential hyperparameter combinations with no decernable trends where found to be similar in predictive power. While the hyperparameter tuned model performed vastly better on the training data and had far fewer rates of false negative dections, the gains in pridicting power in for the test data was very marginal (less than 1%). This is possibly due to the tuned model already have a high accuracy of 98% and the final missclassified points being such strong outliers that they remain very challenging to catagorize, even with hyperparameter optimization. 
 
 ```
