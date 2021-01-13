@@ -5,7 +5,7 @@ date: "6.5.1859"
 output: html_document
 ---
 
-## **note** that the .Rmd can be found on my [personal repo](https://github.com/schneidereits/Quantitative_Methods_HU/tree/main/assignments) for the corse
+## **note** that the .Rmd can be found on my [personal repo](https://github.com/schneidereits/Quantitative_Methods_HU/tree/main/assignments) for the course
 
 **Twinkle, twinkle, little Pulsar - the holiday exercise** 
 
@@ -130,7 +130,7 @@ paste('Correct [%]: ', n_correct / n_train * 100)
 
 # Confusion matrix table for test data
 table(pred_test, test_y)
-# From our confusion matrix of the test (unknown) data we can see that 2428 instances of noise where corretly disciminated and 200 pulsars where correctly identified. There where 11 false positves and 46 false negatives, meaning a majority of pulsars could be detected 
+# From our confusion matrix of the test (unknown) data, we can see that 2428 instances of noise where corretly disciminated and 200 pulsars where correctly identified. There where 11 false positves and 46 false negatives, meaning a majority of pulsars could be detected 
 
 n_correct <- length(pred_test[pred_test == test_y])
 n_test <- length(pred_test)
@@ -161,11 +161,6 @@ print(svm_tune)
 
 # checking and sorting models 
 svm_tune$performances %>% arrange(error)
-
-# best model
-
-best_model <- svm_tune$best.model
-print(best_model) 
 # best four models are:
 # 1) cost=10000, gamma=.001 
 # 2) cost=100, gamma=.01 
@@ -173,12 +168,18 @@ print(best_model)
 # 4) cost=1, gamma=.1
 # all models where only had a 0.03% difference in their error
 
+# best model
+
+best_model <- svm_tune$best.model
+print(best_model) 
+
+
 # Check the tuned model
 
 pred_best <- predict(best_model, train_X)
 # Confusion matrix table for train data using tuned model
 table(pred_best, train_y)
-# From our confusion matrix of the training data we can see that 13747 instances of noise where corretly disciminated and 1163 pulsars where correctly identified. There where 73 false positves and 230 false negatives. This is a substaintail improvment over the previouses model pulsar dection for the train data
+# From our confusion matrix of the training data we can see that 13747 instances of noise were corretly disciminated and 1163 pulsars where correctly identified. There where 73 false positves and 230 false negatives. This is a substaintail improvment over the previouses model pulsar dection for the train data
 
 pred_best_test <- predict(best_model, test_X)
 # Confusion matrix table for test data using tuned model

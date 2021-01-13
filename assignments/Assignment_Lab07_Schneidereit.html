@@ -298,34 +298,34 @@ test_X &lt;- scale(test_X, center = TRUE, scale = TRUE)
 
 summary(train_X)</code></pre>
 <pre><code>##        X1                X2                 X3                  X4         
-##  Min.   :-4.0901   Min.   :-3.18272   Min.   :-2.214465   Min.   :-0.5800  
-##  1st Qu.:-0.3911   1st Qu.:-0.61352   1st Qu.:-0.424047   1st Qu.:-0.3185  
-##  Median : 0.1535   Median : 0.05845   Median :-0.240282   Median :-0.2558  
+##  Min.   :-4.1073   Min.   :-3.17788   Min.   :-2.217816   Min.   :-0.5791  
+##  1st Qu.:-0.3933   1st Qu.:-0.60855   1st Qu.:-0.423687   1st Qu.:-0.3178  
+##  Median : 0.1530   Median : 0.05686   Median :-0.239315   Median :-0.2542  
 ##  Mean   : 0.0000   Mean   : 0.00000   Mean   : 0.000000   Mean   : 0.0000  
-##  3rd Qu.: 0.6241   3rd Qu.: 0.65516   3rd Qu.:-0.004229   3rd Qu.:-0.1371  
-##  Max.   : 3.1696   Max.   : 6.61414   Max.   : 7.137256   Max.   :10.8124  
+##  3rd Qu.: 0.6218   3rd Qu.: 0.65114   3rd Qu.:-0.003564   3rd Qu.:-0.1368  
+##  Max.   : 3.1862   Max.   : 7.62393   Max.   : 6.966682   Max.   :10.3525  
 ##        X5                X6                X7                 X8         
-##  Min.   :-0.4227   Min.   :-0.9728   Min.   :-2.53284   Min.   :-1.0022  
-##  1st Qu.:-0.3650   1st Qu.:-0.6112   1st Qu.:-0.56456   1st Qu.:-0.6597  
-##  Median :-0.3353   Median :-0.4065   Median : 0.03151   Median :-0.2034  
+##  Min.   :-0.4204   Min.   :-0.9736   Min.   :-2.54530   Min.   :-1.0087  
+##  1st Qu.:-0.3625   1st Qu.:-0.6111   1st Qu.:-0.55783   1st Qu.:-0.6586  
+##  Median :-0.3329   Median :-0.4044   Median : 0.03154   Median :-0.2034  
 ##  Mean   : 0.0000   Mean   : 0.0000   Mean   : 0.00000   Mean   : 0.0000  
-##  3rd Qu.:-0.2442   3rd Qu.: 0.1082   3rd Qu.: 0.53315   3rd Qu.: 0.3227  
-##  Max.   : 7.1151   Max.   : 4.3019   Max.   : 5.81770   Max.   :10.2103</code></pre>
+##  3rd Qu.:-0.2434   3rd Qu.: 0.1066   3rd Qu.: 0.53488   3rd Qu.: 0.3279  
+##  Max.   : 7.1162   Max.   : 4.3231   Max.   : 5.84390   Max.   :10.2933</code></pre>
 <pre class="r"><code>summary(test_X)</code></pre>
 <pre><code>##        X1                X2                 X3                  X4         
-##  Min.   :-4.1665   Min.   :-3.16383   Min.   :-2.069771   Min.   :-0.5600  
-##  1st Qu.:-0.4206   1st Qu.:-0.58808   1st Qu.:-0.425546   1st Qu.:-0.3126  
-##  Median : 0.1686   Median : 0.05757   Median :-0.235883   Median :-0.2493  
+##  Min.   :-4.0677   Min.   :-3.07165   Min.   :-1.831200   Min.   :-0.5122  
+##  1st Qu.:-0.4100   1st Qu.:-0.61679   1st Qu.:-0.425428   1st Qu.:-0.3169  
+##  Median : 0.1725   Median : 0.08468   Median :-0.243792   Median :-0.2573  
 ##  Mean   : 0.0000   Mean   : 0.00000   Mean   : 0.000000   Mean   : 0.0000  
-##  3rd Qu.: 0.6212   3rd Qu.: 0.64309   3rd Qu.:-0.003836   3rd Qu.:-0.1335  
-##  Max.   : 2.9377   Max.   : 7.62717   Max.   : 6.542861   Max.   : 8.5900  
+##  3rd Qu.: 0.6274   3rd Qu.: 0.66672   3rd Qu.:-0.007659   3rd Qu.:-0.1355  
+##  Max.   : 2.7795   Max.   : 5.69756   Max.   : 7.053520   Max.   :10.5329  
 ##        X5                X6                X7                 X8         
-##  Min.   :-0.4095   Min.   :-0.9790   Min.   :-2.50397   Min.   :-1.0070  
-##  1st Qu.:-0.3496   1st Qu.:-0.6075   1st Qu.:-0.54855   1st Qu.:-0.6440  
-##  Median :-0.3194   Median :-0.3898   Median : 0.01575   Median :-0.2117  
+##  Min.   :-0.4228   Min.   :-0.9731   Min.   :-2.43578   Min.   :-0.9739  
+##  1st Qu.:-0.3638   1st Qu.:-0.6083   1st Qu.:-0.57961   1st Qu.:-0.6454  
+##  Median :-0.3328   Median :-0.4074   Median : 0.01357   Median :-0.2126  
 ##  Mean   : 0.0000   Mean   : 0.0000   Mean   : 0.00000   Mean   : 0.0000  
-##  3rd Qu.:-0.2344   3rd Qu.: 0.1057   3rd Qu.: 0.52381   3rd Qu.: 0.3257  
-##  Max.   : 6.6237   Max.   : 4.4498   Max.   : 5.84955   Max.   :10.1222</code></pre>
+##  3rd Qu.:-0.2378   3rd Qu.: 0.1101   3rd Qu.: 0.51517   3rd Qu.: 0.2976  
+##  Max.   : 6.6154   Max.   : 4.1728   Max.   : 5.70389   Max.   : 9.6972</code></pre>
 <pre class="r"><code># looks all good. Both the tain and test predictores have means of 0 and a standard deviation of one</code></pre>
 </div>
 <div id="train-an-initial-svm-model-3-points" class="section level2">
@@ -335,7 +335,7 @@ summary(train_X)</code></pre>
 print </code></pre>
 <pre><code>## function (x, ...) 
 ## UseMethod(&quot;print&quot;)
-## &lt;bytecode: 0x7ff510713e40&gt;
+## &lt;bytecode: 0x7f8659cf5040&gt;
 ## &lt;environment: namespace:base&gt;</code></pre>
 <pre class="r"><code>pred_train &lt;- predict(model, train_X)
 pred_test &lt;- predict(model, test_X)
@@ -344,8 +344,8 @@ pred_test &lt;- predict(model, test_X)
 table(pred_train, train_y)</code></pre>
 <pre><code>##           train_y
 ## pred_train     0     1
-##          0 13745   237
-##          1    65  1166</code></pre>
+##          0 13759   256
+##          1    57  1141</code></pre>
 <pre class="r"><code># From our confusion matrix of the training data we can see that 13748 instances of noise where corretly disciminated and 1147 pulsars where correctly identified. There where 72 false positves and 246 false negatives, meaning that 20% of pulsars went undetected 
 
 n_correct &lt;- length(pred_train[pred_train == test_y])</code></pre>
@@ -356,7 +356,7 @@ n_correct &lt;- length(pred_train[pred_train == test_y])</code></pre>
 <pre class="r"><code>n_train &lt;- length(pred_train)
 
 paste('Correct [%]: ', n_correct / n_train * 100)</code></pre>
-<pre><code>## [1] &quot;Correct [%]:  84.5921251561165&quot;</code></pre>
+<pre><code>## [1] &quot;Correct [%]:  84.736738315914&quot;</code></pre>
 <pre class="r"><code># overall 85% of the data where correctly identified as noise or actual pulsars
 
 
@@ -364,15 +364,15 @@ paste('Correct [%]: ', n_correct / n_train * 100)</code></pre>
 table(pred_test, test_y)</code></pre>
 <pre><code>##          test_y
 ## pred_test    0    1
-##         0 2432   45
-##         1   17  191</code></pre>
-<pre class="r"><code># From our confusion matrix of the test (unknown) data we can see that 2428 instances of noise where corretly disciminated and 200 pulsars where correctly identified. There where 11 false positves and 46 false negatives, meaning a majority of pulsars could be detected 
+##         0 2430   40
+##         1   13  202</code></pre>
+<pre class="r"><code># From our confusion matrix of the test (unknown) data, we can see that 2428 instances of noise where corretly disciminated and 200 pulsars where correctly identified. There where 11 false positves and 46 false negatives, meaning a majority of pulsars could be detected 
 
 n_correct &lt;- length(pred_test[pred_test == test_y])
 n_test &lt;- length(pred_test)
 
 paste('Correct [%]: ', n_correct / n_test * 100)</code></pre>
-<pre><code>## [1] &quot;Correct [%]:  97.6908752327747&quot;</code></pre>
+<pre><code>## [1] &quot;Correct [%]:  98.0260707635009&quot;</code></pre>
 <pre class="r"><code># overall 98% of the data where correctly identified as noise or actual pulsars
 
 # My findings show that overall svm provides an appropriate method to discriminate between pulsars and noise. Overall it was seen that the majortiy of errors where false negatives, meaning that the model was worse at indentifing true siganls and proded conservative estimates of the amount of pulsars. Surprisingly the model performed much better on the test data that is was not trained on.</code></pre>
@@ -396,73 +396,48 @@ print(svm_tune)</code></pre>
 ##  cost gamma
 ##   100   0.1
 ## 
-## - best performance: 0.01985169</code></pre>
+## - best performance: 0.02064034</code></pre>
 <pre class="r"><code># checking and sorting models 
-svm_tune$performances</code></pre>
+svm_tune$performances %&gt;% arrange(error)</code></pre>
 <pre><code>##     cost gamma      error  dispersion
-## 1  1e-01 0.001 0.04029466 0.003007415
-## 2  1e+00 0.001 0.02649067 0.002739299
-## 3  1e+01 0.001 0.02287541 0.003003235
-## 4  1e+02 0.001 0.02096903 0.002180415
-## 5  1e+03 0.001 0.02044323 0.002693214
-## 6  1e+04 0.001 0.02004871 0.001966508
-## 7  1e-01 0.010 0.02655642 0.002976964
-## 8  1e+00 0.010 0.02287541 0.002628055
-## 9  1e+01 0.010 0.02090337 0.002838306
-## 10 1e+02 0.010 0.02004875 0.002175653
-## 11 1e+03 0.010 0.02031178 0.001997248
-## 12 1e+04 0.010 0.02024603 0.002253399
-## 13 1e-01 0.100 0.02287532 0.003233334
-## 14 1e+00 0.100 0.02096911 0.002763821
-## 15 1e+01 0.100 0.02018020 0.002279091
-## 16 1e+02 0.100 0.01985169 0.003292732
-## 17 1e+03 0.100 0.02142951 0.003565811
-## 18 1e+04 0.100 0.02353309 0.003437458
-## 19 1e-01 1.000 0.02662225 0.003825786
-## 20 1e+00 1.000 0.02116622 0.003218239
-## 21 1e+01 1.000 0.02123171 0.003220236
-## 22 1e+02 1.000 0.02445297 0.003691164
-## 23 1e+03 1.000 0.03030369 0.004424937
-## 24 1e+04 1.000 0.03904656 0.006275448
-## 25 1e-01 2.000 0.04239836 0.006408750
-## 26 1e+00 2.000 0.02110078 0.002765165
-## 27 1e+01 2.000 0.02248089 0.003335373
-## 28 1e+02 2.000 0.02839736 0.004042234
-## 29 1e+03 2.000 0.03589109 0.004707746
-## 30 1e+04 2.000 0.04351618 0.004856106</code></pre>
-<pre class="r"><code>svm_tune$performances %&gt;% arrange(error)</code></pre>
-<pre><code>##     cost gamma      error  dispersion
-## 1  1e+02 0.100 0.01985169 0.003292732
-## 2  1e+04 0.001 0.02004871 0.001966508
-## 3  1e+02 0.010 0.02004875 0.002175653
-## 4  1e+01 0.100 0.02018020 0.002279091
-## 5  1e+04 0.010 0.02024603 0.002253399
-## 6  1e+03 0.010 0.02031178 0.001997248
-## 7  1e+03 0.001 0.02044323 0.002693214
-## 8  1e+01 0.010 0.02090337 0.002838306
-## 9  1e+02 0.001 0.02096903 0.002180415
-## 10 1e+00 0.100 0.02096911 0.002763821
-## 11 1e+00 2.000 0.02110078 0.002765165
-## 12 1e+00 1.000 0.02116622 0.003218239
-## 13 1e+01 1.000 0.02123171 0.003220236
-## 14 1e+03 0.100 0.02142951 0.003565811
-## 15 1e+01 2.000 0.02248089 0.003335373
-## 16 1e-01 0.100 0.02287532 0.003233334
-## 17 1e+00 0.010 0.02287541 0.002628055
-## 18 1e+01 0.001 0.02287541 0.003003235
-## 19 1e+04 0.100 0.02353309 0.003437458
-## 20 1e+02 1.000 0.02445297 0.003691164
-## 21 1e+00 0.001 0.02649067 0.002739299
-## 22 1e-01 0.010 0.02655642 0.002976964
-## 23 1e-01 1.000 0.02662225 0.003825786
-## 24 1e+02 2.000 0.02839736 0.004042234
-## 25 1e+03 1.000 0.03030369 0.004424937
-## 26 1e+03 2.000 0.03589109 0.004707746
-## 27 1e+04 1.000 0.03904656 0.006275448
-## 28 1e-01 0.001 0.04029466 0.003007415
-## 29 1e-01 2.000 0.04239836 0.006408750
-## 30 1e+04 2.000 0.04351618 0.004856106</code></pre>
-<pre class="r"><code># best model
+## 1  1e+02 0.100 0.02064034 0.003283458
+## 2  1e+03 0.001 0.02090341 0.002888747
+## 3  1e+02 0.001 0.02096903 0.002727825
+## 4  1e+04 0.001 0.02096916 0.003060872
+## 5  1e+01 0.100 0.02103482 0.003131181
+## 6  1e+04 0.010 0.02110065 0.003029806
+## 7  1e+00 1.000 0.02110065 0.002657999
+## 8  1e+01 0.010 0.02116627 0.002803818
+## 9  1e+01 1.000 0.02123227 0.002464660
+## 10 1e+02 0.010 0.02129784 0.002759993
+## 11 1e+03 0.010 0.02136368 0.003358137
+## 12 1e+03 0.100 0.02156061 0.002231708
+## 13 1e+00 0.100 0.02156087 0.003003694
+## 14 1e+00 2.000 0.02182373 0.004098911
+## 15 1e+01 2.000 0.02274383 0.002652773
+## 16 1e-01 0.100 0.02280966 0.003116863
+## 17 1e+00 0.010 0.02300694 0.002876426
+## 18 1e+01 0.001 0.02320414 0.002482835
+## 19 1e+04 0.100 0.02326963 0.002652088
+## 20 1e+02 1.000 0.02445306 0.001805784
+## 21 1e-01 1.000 0.02655663 0.004430544
+## 22 1e+00 0.001 0.02734529 0.003255071
+## 23 1e-01 0.010 0.02780538 0.003281958
+## 24 1e+02 2.000 0.02806841 0.002861226
+## 25 1e+03 1.000 0.02971185 0.003265071
+## 26 1e+03 2.000 0.03740234 0.003580296
+## 27 1e+04 1.000 0.03957166 0.004689698
+## 28 1e-01 0.001 0.04062360 0.004639733
+## 29 1e-01 2.000 0.04259547 0.008003670
+## 30 1e+04 2.000 0.04483015 0.004759842</code></pre>
+<pre class="r"><code># best four models are:
+# 1) cost=10000, gamma=.001 
+# 2) cost=100, gamma=.01 
+# 3) cost=1000, gamma=.001
+# 4) cost=1, gamma=.1
+# all models where only had a 0.03% difference in their error
+
+# best model
 
 best_model &lt;- svm_tune$best.model
 print(best_model) </code></pre>
@@ -476,39 +451,32 @@ print(best_model) </code></pre>
 ##  SVM-Kernel:  radial 
 ##        cost:  100 
 ## 
-## Number of Support Vectors:  764</code></pre>
-<pre class="r"><code># best four models are:
-# 1) cost=10000, gamma=.001 
-# 2) cost=100, gamma=.01 
-# 3) cost=1000, gamma=.001
-# 4) cost=1, gamma=.1
-# all models where only had a 0.03% difference in their error
-
-# Check the tuned model
+## Number of Support Vectors:  775</code></pre>
+<pre class="r"><code># Check the tuned model
 
 pred_best &lt;- predict(best_model, train_X)
 # Confusion matrix table for train data using tuned model
 table(pred_best, train_y)</code></pre>
 <pre><code>##          train_y
 ## pred_best     0     1
-##         0 13762   210
-##         1    48  1193</code></pre>
-<pre class="r"><code># From our confusion matrix of the training data we can see that 13747 instances of noise where corretly disciminated and 1163 pulsars where correctly identified. There where 73 false positves and 230 false negatives. This is a substaintail improvment over the previouses model pulsar dection for the train data
+##         0 13768   218
+##         1    48  1179</code></pre>
+<pre class="r"><code># From our confusion matrix of the training data we can see that 13747 instances of noise were corretly disciminated and 1163 pulsars where correctly identified. There where 73 false positves and 230 false negatives. This is a substaintail improvment over the previouses model pulsar dection for the train data
 
 pred_best_test &lt;- predict(best_model, test_X)
 # Confusion matrix table for test data using tuned model
 table(pred_best_test, test_y)</code></pre>
 <pre><code>##               test_y
 ## pred_best_test    0    1
-##              0 2435   39
-##              1   14  197</code></pre>
+##              0 2428   33
+##              1   15  209</code></pre>
 <pre class="r"><code># From our confusion matrix of the test (unknown) data we can see that 2429 instances of noise where corretly disciminated and 204 pulsars where correctly identified. There where 10 false positves and 42 false negatives. This is only a very marginal improvment when compaired to the previous models performance 
 
 n_correct &lt;- length(pred_best_test[pred_best_test == test_y])
 n_test &lt;- length(pred_best_test)
 
 paste('Correct [%]: ', n_correct / n_test * 100)</code></pre>
-<pre><code>## [1] &quot;Correct [%]:  98.0260707635009&quot;</code></pre>
+<pre><code>## [1] &quot;Correct [%]:  98.2122905027933&quot;</code></pre>
 <pre class="r"><code># # as with the previous model, overall 98% of the data where correctly identified as noise or actual pulsars
 
 # overall my results show that hyperparameter optimization did not yield further improvments in the discriminatation between noise and pulsars. Based on my large grid search, a wide range of potential hyperparameter combinations with no decernable trends where found to be similar in predictive power. While the hyperparameter tuned model performed vastly better on the training data and had far fewer rates of false negative dections, the gains in pridicting power in for the test data was very marginal (less than 1%). This is possibly due to the tuned model already have a high accuracy of 98% and the final missclassified points being such strong outliers that they remain very challenging to catagorize, even with hyperparameter optimization. </code></pre>
