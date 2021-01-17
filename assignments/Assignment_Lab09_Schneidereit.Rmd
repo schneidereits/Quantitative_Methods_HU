@@ -13,6 +13,7 @@ library(dplyr)
 library(readr)
 library(viridis)
 library(ggeffects)
+library(FactoMineR)
 ```
 
 **Using imagery from the Landsat satellites, a study mapped deforestation for an area in the Brazilian Amazon. Your task is to analyze the proximate drivers of deforestation such as terrain, proximity to river and proximity to road. To do this, a random sample of 1000 pixels was selected from the deforestation map for analysis: Deforestation.txt.**
@@ -37,8 +38,8 @@ ggplot(data=Deforestation, aes(deforested, Dist_Road, group=deforested)) +
   theme_classic()
 
 Deforestation %>% count(deforested)
-Deforestation %>% arrange(-Dist_River)
-Deforestation %>% arrange(-Dist_Road)
+Deforestation %>% arrange(-Dist_River) %>% head()
+Deforestation %>% arrange(-Dist_Road) %>% head()
 
 #overall there where 849 samples left forested and 151 samples that where deforested. The ranges of values for distance to river were 0 to 16.78 and the ranges of values for distance for road were 0 to 131.80
 
@@ -51,10 +52,10 @@ Deforestation %>% arrange(-Dist_Road)
 
 ```{r}
 
-m_road <- glm(data = Deforestation, deforested ~ Dist_Road, family = poisson(link = "log")) 
+m_road <- glm(data = Deforestation, deforested ~ Dist_Road, family = binomial(link = "logit")) 
 summary(m_road)
 
-# Here I found that distance to road has a significant effect on if a sample was deforested or not, as distance to road had a small p value (1.98e-12) and a relatively large effect size when compaired to its std. error (estimate=-0.32; std. Error = 0.004). Distance to road had a negative effect, meaning that the further a sample was from a road, the more likely it was to be forested.
+# Here I found that distance to road has a significant effect on if a sample was deforested or not, as distance to road had a small p value (9.08e-14) and a relatively large effect size when compaired to its std. error (estimate=-0.38; std. Error = 0.005). Distance to road had a negative effect, meaning that the further a sample was from a road, the more likely it was to be forested.
 
 ```
 
@@ -62,12 +63,12 @@ summary(m_road)
 ### 2.2 What proporion of the deviance does the model explain ($R^2_{pseudo}$)? Give also a written answer.
 
 ```{r}
-##     Null deviance: 570.92  on 999  degrees of freedom
-## Residual deviance: 498.40  on 998  degrees of freedom
+##     Null deviance: 848.88  on 999  degrees of freedom
+## Residual deviance: 764.61  on 998  degrees of freedom
 
 1- summary(m_road)$deviance / summary(m_road)$null.deviance
 
-# Acording to the calculated pseudo R^2 value, the model only accounts for 12% deviance in the data. 
+# Acording to the calculated pseudo R^2 value, the model  accounts for 99% deviance ("variance") in the data. 
 
 ```
 
@@ -78,18 +79,22 @@ summary(m_road)
 
 library(effects)
 
-efct <- effect("Dist_Road", 
-               mod = m_road, 
-               xlevels = list(Dist_Road = seq(-0, 125, length.out = 100)))
-efct <- as.data.frame(efct)
+#efct <- effect("Dist_Road", 
+#               mod = m_road, 
+#               xlevels = list(Dist_Road = seq(-0, 125, length.out = 100)))
+#efct <- as.data.frame(efct)
 
-ggplot() +
-  geom_point(data = Deforestation, aes(x = Dist_Road, y = deforested)) +
-  geom_ribbon(data = efct, aes(x = Dist_Road, ymin = lower, ymax = upper), alpha = 0.3) +
-  geom_line(data = efct, aes(x = Dist_Road, y = fit))
+#ggplot() +
+#  geom_point(data = Deforestation, aes(x = Dist_Road, y = deforested)) +
+#  geom_ribbon(data = efct, aes(x = Dist_Road, ymin = lower, ymax = upper), alpha = 0.3) +
+#  geom_line(data = efct, aes(x = Dist_Road, y = fit))
+
+
+
 
 ggpredict(m_road, terms = c("Dist_Road"), type = "fe", ci.lvl = 0.95) %>%  # type = fe(fixed effect) because model is non-hirearcical
   plot(rawdata = F) +
+  geom_point(data = Deforestation, aes(Dist_Road, deforested)) +
   geom_point(data = Deforestation, aes(Dist_Road, deforested)) +
   theme_classic()
   
@@ -100,12 +105,26 @@ ggpredict(m_road, terms = c("Dist_Road"), type = "fe", ci.lvl = 0.95) %>%  # typ
 ### 2.4 What is the deforestation probability 1 km away from the road according to your model? Accompany your R result with a written answer!
 
 ```{r}
+library(MASS)
+
+dose.p(m_road, p=.3479)
+
+# Bootleg backwards-outwards way to trial and error find a percise probablity deforestation at 1 km away from the road. The model indiacates that at 1 km (technically 999 m; see dose output) the probablity of deforestation is 0.35 or 35%. 
+
+### EDIT: way over complicated it. Here is the straightforward and reproducable way to the models predicted probablity of deforestation at 1 km away from the road. At one km the probablity of deforestation is 33%
+(p_1km <- predict(m_road, data.frame(Dist_Road = 1), type = "response"))
 
 ```
 
 ### 2.5 How does an increase in 1km distance to the road effect the chance of deforestation? Use the odds-ratio to answer that question.
 
 ```{r}
+# deforestation probability at 0 km
+(p_0km <- predict(m_road, data.frame(Dist_Road = 0), type = "response"))
+
+(p_0km/(1-p_0km))/(p_1km/(1-p_0km))
+
+# An incease of 1 km distance to the road means that a sample is no more than 1.03 times (3%) likely to be forested.
 
 ```
 
@@ -115,14 +134,39 @@ ggpredict(m_road, terms = c("Dist_Road"), type = "fe", ci.lvl = 0.95) %>%  # typ
 ### 3.1 Build a model that predicts probability of deforestation from all terrain and distance variables. Try to find the best parsimonious model; include interaction terms if appropriate. Briefly describe your findings. You may select your model manually or by using an excaustive model search algoritm such the `MuMIn` package.
 
 ```{r}
+# First off I will run a quick PCA to visually assess my variables and check if/how they influence deforestation and if it makes sence to include them in my model.
+
 pca <- Deforestation 
 
 res.pca <- PCA(pca[,c(2:6)], scale.unit = TRUE, ncp = 5, graph = TRUE)
-# from this quick pca we can see that 
+#  In the PCA you can see that while deforestation and Dist_river are diametrically opposed, it looks like Dist_Road has a larger influence (as indicated by a slightly less opposed but much larger arrow and eigenvalue). Furthermore, You can see that Slope and Elevation look like they are closely related to each other, which intuitivley makes sence...
 
-m_deforest <- glm(data = Deforestation, deforested ~ Dist_Road + Dist_River + Elevation*Slope, family = poisson(link = "log")) 
-summary(m_deforest)
+# install.packages("MuMIn")
+library(MuMIn)
 
+# create saturated model
+m_saturated <- glm(deforested ~ Dist_Road*Dist_River + Dist_Road*Elevation +
+                     Dist_Road*Slope + Dist_River*Elevation + Dist_River*Elevation +
+                     Elevation*Slope, family = binomial(link = "logit") , data = Deforestation)
+
+# Here I am creating a saturated model with all possible interaction terms. While this is probalby not best practice, without  having clear hypothesis for including them, I chose to do this for the sake of this excercise, and because the all terms could potentally have interactoins. 
+
+options(na.action = "na.fail") # Required for dredge to run
+
+model_dredge <- dredge(m_saturated, beta = F, evaluate = T, rank = AICc)
+
+options(na.action = "na.omit") # set back to default
+
+head(model_dredge)
+
+nrow(model_dredge) # 72 models in total
+
+top_model <- get.models(model_dredge, subset = 1)[[1]]
+top_model
+
+# Summarize top model
+summary(top_model)
+# The MuMIn package selected a model including Dist-Road, evelation and an interaction term between these two as the best model to predict deforestation. This is somewhat surprising based on the results of my PCA where It did not seem that Dist_road and elevation had much on combined effect on deforestation (as would be indicated by directionall congruent or opposed arrows). Distance to road had the strongest effect on whether a sample was forested (est -0.11), with evelvation being a weaker predicor (est= -0.01). The interaction term between the two variables had very slight but positive effect with a relatively large std error (est= 0.00022, std error=0.00011), meaning that the change of being deforested increased if a sample was both far from a road and at high evelation. This diviates from the observed trends of the individual predictors trends.  
 
 
 ```
@@ -131,6 +175,13 @@ summary(m_deforest)
 ### 3.2 Visualze how the effect of distance to road varies with elevation! Describe the graph in 1-2 sentence.
 
 ```{r}
+
+ggpredict(top_model, terms = c("Dist_Road", "Elevation[250,300,400,500,550,600]"), type = "fe", ci.lvl = 0.95) %>%  # type = fe(fixed effect) because model is non-hirearcical
+  plot(rawdata = F) +
+  #geom_point(data = Deforestation, aes(Dist_Road, deforested)) +
+  theme_classic()
+
+# In this plot is becomes apparent that the amount of deforested samples as a result of proximity to a road is influenced by the elevation of the site. With increasing elevation, deforestation rates tend to decrease. The observable modest increases at very high elevation (>550 m) should be interpreted with great causion, due to the huge 95 CI values around the estimates. personally I suspect this is a statistical artifact as the is no apparent bio-physical mechasim to explain this. Possibley this highlights the considerations that need to be made when taking less imformed automated model selection approaches.                      
 
 ```
 
