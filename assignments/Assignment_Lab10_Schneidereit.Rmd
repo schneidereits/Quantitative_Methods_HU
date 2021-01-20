@@ -1,0 +1,110 @@
+---
+title: "Assignment 10"
+author: ""
+date: ""
+output: html_document
+---
+
+# **note** that the .Rmd can be found on my [personal repo](https://github.com/schneidereits/Quantitative_Methods_HU/tree/main/assignments) for the course
+
+```{r, include= FALSE}
+library(tidyverse)
+library(dplyr)
+library(readr)
+library(viridis)
+library(ggeffects)
+library(FactoMineR)
+```
+
+## 1. Draw 10,000 random samples from the bioclim dataset (bioclim.tif).
+
+```{r}
+library(raster)
+library(rasterVis)
+library(GGally)
+
+clim <- stack("~/Documents/humbolt/quantitative_methods/pc_lab/data/bioclim.tif")
+clim
+
+# add variable names
+names(clim) <- c("Annual Mean Temperature", "Mean Diurnal Range", "Isothermality", "Temperature Seasonality",
+                 "Max Temperature of Warmest Month", "Min Temperature of Coldest Month", "Temperature Annual Range", "Mean Temperature of Wettest Quarter", "Mean Temperature of Driest Quarter", "Mean Temperature of Warmest Quarter", "Mean Temperature of Coldest Quarter", "Annual Precipitation", "Precipitation of Wettest Month", "Precipitation of Driest Month", "Precipitation Seasonality ", "Precipitation of Wettest Quarter", "Precipitation of Driest Quarter", "Precipitation of Warmest Quarter", "Precipitation of Coldest Quarter")
+
+levelplot(clim, layers=1)
+
+set.seed(42)
+clim_samp <- sampleRandom(clim, size = 10000)
+clim_samp <- as.data.frame(clim_samp)
+
+head(clim_samp)
+
+clim_samp %>% 
+  sample_n(., size = 100) %>%
+  ggpairs(.)
+
+```
+
+
+## 2. Conduct a principle component analysis on the bioclim samples in order to reduce the 19 climate variables to the most important principle components. Answer the following question (show your results). 
+    
+a) How much variance (in percent) explain the first three components? How many components, do you think, are needed to describe (the majority of the variance of) the dataset and why?
+
+
+```{r}
+pca <- prcomp(clim_samp, scale. = T)
+summary(pca)
+
+var_exp <- data.frame(pc = 1:19,
+                      var_exp = pca$sdev^2 / sum(pca$sdev^2))
+
+# add the variances cumulatively
+var_exp$var_exp_cumsum <- cumsum(var_exp$var_exp)
+var_exp
+
+ggplot(var_exp) +
+  geom_bar(aes(x = pc, y = var_exp), stat = "identity") +
+  geom_line(aes(x = pc, y = var_exp_cumsum)) +
+  theme_classic()
+
+# PC1, PC2, and PC3 exaplain 53%, 25% and 7% respectively, culmitating in these three accounting for 85% of the total variance. I would argue that for most analytical purposes using the first 4 principles components should be suffencient. The first 4 componets account for 90% of the total variance, with each additional PC adding account for no more than ~2% additional variance. 
+
+```
+
+
+## 3. What information do the first three components (mainly) represent with respect to the input variables? Use the loadings/rotation coefficients of the first three components to answer this question.
+    
+```{r}
+library(FactoMineR)
+
+# quick biplot of the first two pcs. 
+res.pca <- PCA(clim_samp[,c(1:19)], scale.unit = TRUE, ncp = 5, graph = TRUE)
+
+pca$rotation
+
+# Based on the roation coefficients, PC1 mainly represents variables realted to cold weather (mean temp coldest month, mean temp coldest quater) as well variables derived from cold temp, such as annual mean, isothermality and temp seasonality. PC2 mainly represents variables relating to percipitatoin (particularly drier conditions). PC2 mainly represents variables relating to high (wet) precipitation and high levels of percipitaion seasonality. 
+
+```
+
+
+## 4. Inspect the spatial predictions of the important principle components visullay.
+
+```{r}
+clim_pca <- raster::predict(clim, pca, index = 1:19)
+
+plot(subset(clim_pca, 1)) # cold weather (mean temp coldest month, mean temp coldest quater) as well variables derived from cold temp, such as annual mean, isothermality and temp seasonality
+
+# Here we see that in accourdance with the eigenvalues from the rotation that PC1 is negative at mid ladituedes, as these are wamer, have higher annual means and exhibit less seasonal varitabiltiy in temp.
+
+plot(subset(clim_pca, 2)) # percipitatoin (particularly drier conditions)
+
+# Given the assemetical color scale it, wetter climates with negeative PC2 stand out. Thus we see more negative values across the equatorial belt and in greenland (high snowfall)
+
+
+plot(subset(clim_pca, 3)) # high (wet) precipitation and high levels of percipitaion seasonality
+
+# He the indian subcontent and parts of SE Asia stand out, due to the high level of variance in percipitation caused by the monsoon climate. 
+
+
+```
+
+

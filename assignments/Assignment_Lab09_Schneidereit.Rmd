@@ -68,7 +68,7 @@ summary(m_road)
 
 1- summary(m_road)$deviance / summary(m_road)$null.deviance
 
-# Acording to the calculated pseudo R^2 value, the model  accounts for 99% deviance ("variance") in the data. 
+# Acording to the calculated pseudo R^2 value, the model  accounts for 9.92% deviance ("variance") in the data. 
 
 ```
 
