@@ -81,6 +81,10 @@ res.pca <- PCA(clim_samp[,c(1:19)], scale.unit = TRUE, ncp = 5, graph = TRUE)
 
 pca$rotation
 
+pca_scores <- data.frame(pca$x)
+df <- cbind(clim_samp, pca_scores)
+ggpairs(df[,1:19])
+
 # Based on the roation coefficients, PC1 mainly represents variables realted to cold weather (mean temp coldest month, mean temp coldest quater) as well variables derived from cold temp, such as annual mean, isothermality and temp seasonality. PC2 mainly represents variables relating to percipitatoin (particularly drier conditions). PC2 mainly represents variables relating to high (wet) precipitation and high levels of percipitaion seasonality. 
 
 ```

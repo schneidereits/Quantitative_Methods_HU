@@ -1,0 +1,91 @@
+---
+title: "Assignment 11"
+author: ""
+date: ""
+output: html_document
+---
+
+ **note** that the .Rmd can be found on my [personal repo](https://github.com/schneidereits/Quantitative_Methods_HU/tree/main/assignments) for the course
+
+```{r, include= FALSE}
+library(tidyverse)
+library(dplyr)
+library(readr)
+library(viridis)
+library(ggeffects)
+library(FactoMineR)
+library(MASS)
+```
+
+## 1. Use the built-in iris dataset to build a linear discriminant analysis model that predicts Species from the four Sepal and Petal measurements. Note data("iris") loads the built-in dataset. Answer the following questions: 1) How many discriminant functions are estimated? 
+
+```{r}
+data("iris")
+head(iris)
+
+lda <- lda(Species ~ ., data=iris)
+
+lda$prior # equal uninformative priors-- looks all good
+
+lda$svd # only two discriminate functions are estimated
+
+lda$svd^2 / sum(lda$svd^2) # LD1 explains 99% between-class variance
+
+# only two discriminant funcitons are estimated as there are only three groups and when conducting a LDA the number of your discriminant funcitons is equal to your degrees of freedom (groups) minus one 
+
+
+```
+
+
+## 2. How many discriminant functions might be needed to distinguish the three Species? Show and explain why.
+
+```{r}
+
+lda
+
+# The first discriminate funciton should be sufficient to distinguish the three species, as can be onserved in the final row of the summary proportion of trace. LD1 alone explains 99% between-class variance, and thus should be fully sufficient to distinguish species, as it explains the vast majority of the oberserved variance. Conceptually when plotted on a stright line with no y-axis, species would visually still cluster into distinct grounds.
+
+
+
+
+```
+
+
+## 3. Which of the 4 variables are most important for distinguishing species? Show and explain why.
+
+```{r}
+
+lda
+
+# Looking at the Coefficients of linear discriminants, it can be seen that Petal.Width is the most important variable for distinguishing species as it has the strongest loadings on LD1 and  LD2. 
+
+# this is confirmed by a brief plot of Petal.Width (and completely ignoring the y-axis). Here can can be seen that based on visual assessment, species discriminate into distinct clusters, even when only looking at Petal.Width on a single axis.  
+ggplot(iris, aes(Petal.Width, Petal.Length, color=Species)) +
+  geom_point() +
+  ylim(0,10000) + # effectively removes the visual impact of y on plot, by creating a huge scale
+  theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()) 
+
+
+
+```
+
+
+
+
+## 4. 4. Use leave-one-out crossvalidation to predict species with linear discriminant function analysis. Show the resulting confusion matrix and estimate the overall classification accuracy? Show and describe your results.
+```{r}
+library(caret)
+
+lda_cv <- lda(Species ~ ., data=iris, CV=T)
+
+confusion <- table(list(predicted=lda_cv$class, observed=iris$Species))
+confusionMatrix(confusion)
+
+# As can be seen by the confusion matrix, all sectosa species where correctly identified, while a few versicolor and virginica species where miss-classified (1 and 2 samples respectively). The overall classification accuracy was 98% (upper and lower 95% confidence interval 94% and 99%). Overall these results indicate that our linear discriminant function analysis is an effective and accurate tool to predict species.
+
+```
+
+
+
