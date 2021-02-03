@@ -40,7 +40,7 @@ non_na <- apply(bioclim_values, MARGIN = 1, FUN = function(x){any(is.na(x)) == F
 wss <- c()
 var_explained <- c()
 
-#setting range from 1 to 10 clusters
+#setting range from 1 to 6 clusters, because I max out here and recieve a warning message that I exceed the max stage steps
 for(k in 1:6){
   set.seed(42)
   fit <- kmeans(scale(bioclim_values[non_na,]), centers = k)
@@ -67,7 +67,6 @@ head(var_explained)
 
 # run k-means only on valid pixels (non NA):
 clim_kmeans <- kmeans(scale(bioclim_values[non_na,]), centers = 4) 
-clim_kmeans
 
 # add a cluster column
 clim$cluster4 <- clim_kmeans$cluster
@@ -89,22 +88,24 @@ plot(kmean_raster)
 
 # run k-means only on valid pixels (non NA):
 clim_kmeans_fun <- kmeans(scale(bioclim_values[non_na,]), centers = 10) 
-clim_kmeans_fun
 
 # add a cluster column
-clim$cluster10 <- clim_kmeans_fun$cluster
+clim$cluster <- clim_kmeans_fun$cluster
 
 # create new column "cluster" in the data.frame based on the k-means clusters
 # but only fill the rows that have non-NA's
-bioclim_values[non_na, "cluster"] <- clim_kmeans_fun$cluster
+bioclim_values_fun <- bioclim_values
+bioclim_values_fun[non_na, "cluster"] <- clim_kmeans_fun$cluster
 
 # copy first raster layer as template for the cluster results
-kmean_raster <- raster(clim)
+kmean_raster_fun <- raster(clim)
 
 # replace values with cluster id's
-values(kmean_raster) <- bioclim_values$cluster
+values(kmean_raster_fun) <- bioclim_values_fun$cluster
 
-plot(kmean_raster)
+plot(kmean_raster_fun)
+
+# This generally does correspond quite well to the Köppen-Geiger climate classification map
 
 ```
 
