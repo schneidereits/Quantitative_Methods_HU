@@ -1,0 +1,116 @@
+---
+title: "Assignment 12"
+author: "Schneidereit"
+date: "3.2.2021"
+output: html_document
+---
+
+ **note** that the .Rmd can be found on my [personal repo](https://github.com/schneidereits/Quantitative_Methods_HU/tree/main/assignments) for the course
+
+```{r, include= FALSE}
+library(tidyverse)
+library(dplyr)
+library(readr)
+library(viridis)
+library(ggeffects)
+library(FactoMineR)
+library(MASS)
+library(raster)
+library(rasterVis)
+library(GGally)
+```
+
+## 1. Conduct a K-Means cluster analysis on the global bioclim dataset. Find the optimal number of clusters using the elbow method. Explain and show your results. How much variance do the selected clusters explain together? 
+
+```{r}
+clim <- stack("~/Documents/humbolt/quantitative_methods/pc_lab/data/bioclim.tif")
+clim
+
+# add variable names
+names(clim) <- c("Annual Mean Temperature", "Mean Diurnal Range", "Isothermality", "Temperature Seasonality",
+                 "Max Temperature of Warmest Month", "Min Temperature of Coldest Month", "Temperature Annual Range", "Mean Temperature of Wettest Quarter", "Mean Temperature of Driest Quarter", "Mean Temperature of Warmest Quarter", "Mean Temperature of Coldest Quarter", "Annual Precipitation", "Precipitation of Wettest Month", "Precipitation of Driest Month", "Precipitation Seasonality ", "Precipitation of Wettest Quarter", "Precipitation of Driest Quarter", "Precipitation of Warmest Quarter", "Precipitation of Coldest Quarter")
+
+# convert raster to data.frame
+bioclim_values <- as.data.frame(clim)
+
+# indices of rows for which any column is non NAN
+non_na <- apply(bioclim_values, MARGIN = 1, FUN = function(x){any(is.na(x)) == FALSE})
+
+# create Kluster selection between 1- 10
+wss <- c()
+var_explained <- c()
+
+#setting range from 1 to 10 clusters
+for(k in 1:6){
+  set.seed(42)
+  fit <- kmeans(scale(bioclim_values[non_na,]), centers = k)
+  wss <- c(wss, fit$tot.withinss)
+  var_explained <- c(var_explained, fit$betweenss/fit$totss)
+}
+
+head(wss)
+
+ggplot(data.frame(k = 1:6, wss = wss), aes(x = k, y = wss)) +
+  geom_line() +
+  scale_x_continuous(breaks = 1:6)
+
+head(var_explained)
+
+ # Looking at the elbow plot 4 clusters seem to be the point at which sum of squared error decreases abruptly. When looking at the variation explained dataframe, it is seen that the selected clusteres explain 60.3% of the total variance
+
+
+```
+
+## 2. Run the k-Means cluster analysis based on the number of clusters (k) that you identified in task 1. Create and plot a map of the global bioclimatic classes (clusters).
+
+```{r}
+
+# run k-means only on valid pixels (non NA):
+clim_kmeans <- kmeans(scale(bioclim_values[non_na,]), centers = 4) 
+clim_kmeans
+
+# add a cluster column
+clim$cluster4 <- clim_kmeans$cluster
+
+# create new column "cluster" in the data.frame based on the k-means clusters
+# but only fill the rows that have non-NA's
+bioclim_values[non_na, "cluster"] <- clim_kmeans$cluster
+
+# copy first raster layer as template for the cluster results
+kmean_raster <- raster(clim)
+
+# replace values with cluster id's
+values(kmean_raster) <- bioclim_values$cluster
+
+plot(kmean_raster)
+
+################# Plotting a larger number of clusters to try to reproduce the Köppen-Geiger climate classification map
+
+
+# run k-means only on valid pixels (non NA):
+clim_kmeans_fun <- kmeans(scale(bioclim_values[non_na,]), centers = 10) 
+clim_kmeans_fun
+
+# add a cluster column
+clim$cluster10 <- clim_kmeans_fun$cluster
+
+# create new column "cluster" in the data.frame based on the k-means clusters
+# but only fill the rows that have non-NA's
+bioclim_values[non_na, "cluster"] <- clim_kmeans_fun$cluster
+
+# copy first raster layer as template for the cluster results
+kmean_raster <- raster(clim)
+
+# replace values with cluster id's
+values(kmean_raster) <- bioclim_values$cluster
+
+plot(kmean_raster)
+
+```
+
+
+
+
+
+
+

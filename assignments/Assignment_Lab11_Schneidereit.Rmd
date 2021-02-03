@@ -15,6 +15,9 @@ library(viridis)
 library(ggeffects)
 library(FactoMineR)
 library(MASS)
+library(raster)
+library(rasterVis)
+library(GGally)
 ```
 
 ## 1. Use the built-in iris dataset to build a linear discriminant analysis model that predicts Species from the four Sepal and Petal measurements. Note data("iris") loads the built-in dataset. Answer the following questions: 1) How many discriminant functions are estimated? 
