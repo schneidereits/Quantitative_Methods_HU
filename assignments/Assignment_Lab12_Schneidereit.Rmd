@@ -56,6 +56,10 @@ ggplot(data.frame(k = 1:6, wss = wss), aes(x = k, y = wss)) +
 
 head(var_explained)
 
+ggplot(data.frame(k = 1:6, var_explained = var_explained), aes(x = k, y = var_explained)) +
+  geom_line() +
+  scale_x_continuous(breaks = 1:6)
+
  # Looking at the elbow plot 4 clusters seem to be the point at which sum of squared error decreases abruptly. When looking at the variation explained dataframe, it is seen that the selected clusteres explain 60.3% of the total variance
 
 

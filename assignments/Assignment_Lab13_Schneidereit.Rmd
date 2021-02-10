@@ -1,0 +1,104 @@
+---
+title: "Assignment 13"
+author: "shawn schneidereit"
+date: "10.2.2021"
+output: html_document
+---
+
+**note** that the .Rmd can be found on my [personal repo](https://github.com/schneidereits/Quantitative_Methods_HU/tree/main/assignments) for the course
+
+```{r, include= FALSE}
+library(tidyverse)
+library(dplyr)
+library(readr)
+library(viridis)
+library(ggeffects)
+library(FactoMineR)
+library(MASS)
+library(raster)
+library(rasterVis)
+library(GGally)
+```
+
+
+# A simple species distribution model.
+
+The goal of this exercise is to build a simple statistical species distribution model for *Abies alba*. We will use a  Europe-wide tree species occurrence data set (Mauri et al., 2017) as reference and the Bioclim dataset as predictors.
+
+Mauri, A., Strona, G., & San-Miguel-Ayanz, J. (2017). EU-Forest, a high-resolution tree occurrence dataset for Europe. Sci Data, 4, 160123
+
+
+## 1) Calculate the count of *Abies alba* observations within each Bioclim grid cell (2 Points): 
+
+We start by importing the dataset ("abiesalba.csv") and visualizing the observed occurrence of *Abies alba*. To make  this occurrence dataset spatially comparable to the predicted map that we will build later, I want you to create a raster of the occurrence counts at the spatial resolution of the bioclim dataset (bioclim_europe.tif). Check out the raster::rasterize() function to achieve this.
+
+You can download the bioclim_europe.tif from: https://1drv.ms/u/s!AqNb6reoHXeZoq9JzbzkiwU_Gqu06w?e=wejkdx. The bioclim_europe raster has an equal-area projection (EPSG:3035, see: https://spatialreference.org/ref/epsg/etrs89-etrs-laea/). 
+
+
+```{r, warning=FALSE, message=F}
+# Managing and manipulating vector data
+library(sp)
+# Reading and writing spatial data
+library(rgdal)
+# Reading and manipulating raster data
+library(raster)
+# Map visualization
+library(mapview)
+# Spatial analysis and modeling utilities
+library(spatialEco)
+# Managing and manipulating vector data
+library(sf)
+
+# import lat long csv
+abies <- read_csv("~/Documents/humbolt/quantitative_methods/pc_lab/data/abiesalba.csv")
+
+#convert to a simple features object
+abies_sp <- SpatialPoints(abies, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+
+# vis abies occurance
+mapview(abies_sp)
+
+
+abies_raster <- raster::rasterize(abies_sp, x, y)
+
+clim <- stack("~/Documents/humbolt/quantitative_methods/pc_lab/data/bioclim_europe.tif")
+
+# add variable names
+names(clim) <- c("Annual Mean Temperature", "Mean Diurnal Range", "Isothermality", "Temperature Seasonality",
+                 "Max Temperature of Warmest Month", "Min Temperature of Coldest Month", "Temperature Annual Range", "Mean Temperature of Wettest Quarter", "Mean Temperature of Driest Quarter", "Mean Temperature of Warmest Quarter", "Mean Temperature of Coldest Quarter", "Annual Precipitation", "Precipitation of Wettest Month", "Precipitation of Driest Month", "Precipitation Seasonality ", "Precipitation of Wettest Quarter", "Precipitation of Driest Quarter", "Precipitation of Warmest Quarter", "Precipitation of Coldest Quarter")
+
+clim_projection <- projection(clim)
+clim_projection
+
+
+
+```
+
+## 2) Prepare a dataset combining response and predictor variables (3 Points): 
+
+Before we can train our statistical model, we need to create a random sample from our response and predictor variables. The result should be a data.frame. Note, stack the bioclim and count raster before sampling. 
+
+When sampling, you have to options: 1) a random sample of 20% of the observed grid-cells, OR 2) create a stratified sample containing 20% of the observations in each count class.
+
+Option 2 gets extra points. Hint: You can combine dplyr::group_by() and dplyr::sample_frac()!
+
+```{r}
+
+```
+
+## 3) Build a model predicting the count of *Abies alba* (3 Points)
+
+Use a GLM to predict the occurrence of *Abies alba* from bioclim data. You can hand-pick variables or use a variable selection technique. Your choice.
+
+```{r}
+
+```
+
+## 4) Create a map of the predicted *Abies alba* counts (2 Point)
+
+```{r, warning=FALSE, message=F}
+
+```
+
+
+
