@@ -67,9 +67,11 @@ clim <- stack("~/Documents/humbolt/quantitative_methods/pc_lab/data/bioclim_euro
 names(clim) <- c("Annual Mean Temperature", "Mean Diurnal Range", "Isothermality", "Temperature Seasonality",
                  "Max Temperature of Warmest Month", "Min Temperature of Coldest Month", "Temperature Annual Range", "Mean Temperature of Wettest Quarter", "Mean Temperature of Driest Quarter", "Mean Temperature of Warmest Quarter", "Mean Temperature of Coldest Quarter", "Annual Precipitation", "Precipitation of Wettest Month", "Precipitation of Driest Month", "Precipitation Seasonality ", "Precipitation of Wettest Quarter", "Precipitation of Driest Quarter", "Precipitation of Warmest Quarter", "Precipitation of Coldest Quarter")
 
+soil <- stack("~/Documents/humbolt/quantitative_methods/pc_lab/data/soil_europe_laea_10x10km.tif")
+
 # creating a projection for eu bioclimatic data
 clim_projection <- projection(clim)
-clim_projection
+clim_projection 
 
 # transforming the abies data to match bio clim projection 
 abies_sp <- spTransform(abies_sp, crs(clim_projection))
@@ -83,14 +85,14 @@ ras <- raster(ext)
 ras 
 
 # set resolution to 5000x5000, while keeping the original projection
-res(ras) <- c(5000, 5000)
+res(ras) <- c(11200, 18500)
 ras
 # adding to projection (note this is the bioclim projection, not abies anymore)
 projection(ras) <- projection(abies_sp)
 ras # 5000x5000 resolution with the laea projection of the bioclim data
 
 # rasterize the abie points and count the number of points in each cell
-abies_ras <- raster::rasterize(abies_sp, ras, fun = "count", background = 0)
+abies_ras <- raster::rasterize(abies_sp, clim, fun = "count", background = 0)
 abies_ras
 mapview(abies_ras)
 
@@ -111,13 +113,14 @@ Option 2 gets extra points. Hint: You can combine dplyr::group_by() and dplyr::s
 # first we need harminize resolution and crop the climate data to have the same extent
 res(clim) <- c(5000, 5000)
 clim <- crop(clim, abies_ras)
+plot(clim, y = 1)
 
 # then we can stack 
 abies_stack <- raster::stack(clim, abies_ras)
 
 # option 1
 # not best practice but hard coded to sample 20% of total cells (ncell)
-abies_sample <- sampleRandom(abies_stack, size = 192852*.2)
+abies_sample <- sampleRandom(abies_stack, size = 23219*.2)
 
 # option 2
 abies_sample <- abies_stack %>% 
@@ -126,6 +129,10 @@ abies_sample <- abies_stack %>%
 abies.df <- as.data.frame(abies_sample)
 head(abies.df)
 
+# rename variables 
+names(abies.df) <- c("AnnualMeanTemperature", "MeanDiurnalRange", "Isothermality", "TemperatureSeasonality",
+                 "MaxTemperatureofWarmestMonth", "MinTemperatureofColdestMonth", "TemperatureAnnualRange", "MeanTemperatureofWettestQuarter", "MeanTemperatureofDriestQuarter", "MeanTemperatureofWarmestQuarter", "MeanTemperatureofColdestQuarter", "AnnualPrecipitation", "PrecipitationofWettestMonth", "PrecipitationofDriestMonth", "PrecipitationSeasonality", "PrecipitationofWettestQuarter", "PrecipitationofDriestQuarter", "PrecipitationofWarmestQuarter", "PrecipitationofColdestQuarter", "Abies")
+
 ```
 
 ## 3) Build a model predicting the count of *Abies alba* (3 Points)
@@ -133,6 +140,33 @@ head(abies.df)
 Use a GLM to predict the occurrence of *Abies alba* from bioclim data. You can hand-pick variables or use a variable selection technique. Your choice.
 
 ```{r}
+
+m1 <- glm(data = abies.df, Abies ~ AnnualMeanTemperature + AnnualPrecipitation, family = "gaussian")
+summary(m1)
+
+# install.packages("MuMIn")
+library(MuMIn)
+
+# create semi-saturated model, with the broader variables based on my novice guess, I a priori think will be more relavent
+m_saturated <- glm(data = abies.df, Abies ~ AnnualMeanTemperature + Isothermality + TemperatureSeasonality + TemperatureAnnualRange + AnnualPrecipitation + PrecipitationSeasonality, family = "gaussian")
+
+summary(m_saturated)
+
+options(na.action = "na.fail") # Required for dredge to run
+
+model_dredge <- dredge(m_saturated, beta = F, evaluate = T, rank = AICc)
+
+options(na.action = "na.omit") # set back to default
+
+head(model_dredge)
+
+nrow(model_dredge) # 64 models in total
+
+top_model <- get.models(model_dredge, subset = 1)[[1]]
+top_model
+
+# Summarize top model
+summary(top_model)
 
 ```
 
