@@ -64,8 +64,8 @@ mapview(abies_sp)
 clim <- stack("~/Documents/humbolt/quantitative_methods/pc_lab/data/bioclim_europe.tif")
 
 # add variable names
-names(clim) <- c("Annual Mean Temperature", "Mean Diurnal Range", "Isothermality", "Temperature Seasonality",
-                 "Max Temperature of Warmest Month", "Min Temperature of Coldest Month", "Temperature Annual Range", "Mean Temperature of Wettest Quarter", "Mean Temperature of Driest Quarter", "Mean Temperature of Warmest Quarter", "Mean Temperature of Coldest Quarter", "Annual Precipitation", "Precipitation of Wettest Month", "Precipitation of Driest Month", "Precipitation Seasonality ", "Precipitation of Wettest Quarter", "Precipitation of Driest Quarter", "Precipitation of Warmest Quarter", "Precipitation of Coldest Quarter")
+names(clim) <-  c("AnnualMeanTemperature", "MeanDiurnalRange", "Isothermality", "TemperatureSeasonality",
+                 "MaxTemperatureofWarmestMonth", "MinTemperatureofColdestMonth", "TemperatureAnnualRange", "MeanTemperatureofWettestQuarter", "MeanTemperatureofDriestQuarter", "MeanTemperatureofWarmestQuarter", "MeanTemperatureofColdestQuarter", "AnnualPrecipitation", "PrecipitationofWettestMonth", "PrecipitationofDriestMonth", "PrecipitationSeasonality", "PrecipitationofWettestQuarter", "PrecipitationofDriestQuarter", "PrecipitationofWarmestQuarter", "PrecipitationofColdestQuarter")
 
 soil <- stack("~/Documents/humbolt/quantitative_methods/pc_lab/data/soil_europe_laea_10x10km.tif")
 
@@ -76,23 +76,29 @@ clim_projection
 # transforming the abies data to match bio clim projection 
 abies_sp <- spTransform(abies_sp, crs(clim_projection))
 
-# generate a grid from the points extent
+# creating an object that containes the original abies extent
 ext <- extent(abies_sp)
 ext
 
+##### obsolete as I transform abies_sp in the raster ransform step
+# generate a grid from the points extent
+
 #adding the restent to a new raster object
-ras <- raster(ext)
-ras 
+#ras <- raster(ext)
+#ras 
 
 # set resolution to 5000x5000, while keeping the original projection
-res(ras) <- c(11200, 18500)
-ras
+#res(ras) <- c(11200, 18500)
+#ras
 # adding to projection (note this is the bioclim projection, not abies anymore)
-projection(ras) <- projection(abies_sp)
-ras # 5000x5000 resolution with the laea projection of the bioclim data
+#projection(ras) <- projection(abies_sp)
+#ras # 5000x5000 resolution with the laea projection of the bioclim data
 
 # rasterize the abie points and count the number of points in each cell
 abies_ras <- raster::rasterize(abies_sp, clim, fun = "count", background = 0)
+
+# crop to match orignal abies extent 
+abies_ras <- crop(abies_ras, ext)
 abies_ras
 mapview(abies_ras)
 
@@ -111,7 +117,7 @@ Option 2 gets extra points. Hint: You can combine dplyr::group_by() and dplyr::s
 
 ```{r}
 # first we need harminize resolution and crop the climate data to have the same extent
-res(clim) <- c(5000, 5000)
+
 clim <- crop(clim, abies_ras)
 plot(clim, y = 1)
 
@@ -122,16 +128,23 @@ abies_stack <- raster::stack(clim, abies_ras)
 # not best practice but hard coded to sample 20% of total cells (ncell)
 abies_sample <- sampleRandom(abies_stack, size = 23219*.2)
 
-# option 2
-abies_sample <- abies_stack %>% 
-  dplyr::group_by()
-
-abies.df <- as.data.frame(abies_sample)
+abies.df <- as.data.frame(abies_sample) 
 head(abies.df)
 
 # rename variables 
 names(abies.df) <- c("AnnualMeanTemperature", "MeanDiurnalRange", "Isothermality", "TemperatureSeasonality",
                  "MaxTemperatureofWarmestMonth", "MinTemperatureofColdestMonth", "TemperatureAnnualRange", "MeanTemperatureofWettestQuarter", "MeanTemperatureofDriestQuarter", "MeanTemperatureofWarmestQuarter", "MeanTemperatureofColdestQuarter", "AnnualPrecipitation", "PrecipitationofWettestMonth", "PrecipitationofDriestMonth", "PrecipitationSeasonality", "PrecipitationofWettestQuarter", "PrecipitationofDriestQuarter", "PrecipitationofWarmestQuarter", "PrecipitationofColdestQuarter", "Abies")
+
+# option 2
+abies.df <- as.data.frame(abies_stack)
+abies_sample <- abies.df %>% 
+  dplyr::group_by(layer) %>% 
+  dplyr::sample_frac(layer, 20) %>% 
+  mutate(Abies = layer)
+
+
+
+
 
 ```
 
@@ -141,14 +154,17 @@ Use a GLM to predict the occurrence of *Abies alba* from bioclim data. You can h
 
 ```{r}
 
-m1 <- glm(data = abies.df, Abies ~ AnnualMeanTemperature + AnnualPrecipitation, family = "gaussian")
+ggplot(abies_sample, aes(x = Abies)) +
+         geom_density()
+
+m1 <- glm(data = abies_sample, Abies ~ AnnualMeanTemperature + AnnualPrecipitation, family = "poisson")
 summary(m1)
 
 # install.packages("MuMIn")
 library(MuMIn)
 
 # create semi-saturated model, with the broader variables based on my novice guess, I a priori think will be more relavent
-m_saturated <- glm(data = abies.df, Abies ~ AnnualMeanTemperature + Isothermality + TemperatureSeasonality + TemperatureAnnualRange + AnnualPrecipitation + PrecipitationSeasonality, family = "gaussian")
+m_saturated <- glm(data = abies_sample, Abies ~ AnnualMeanTemperature + Isothermality + TemperatureSeasonality + TemperatureAnnualRange + AnnualPrecipitation + PrecipitationSeasonality, family = "poisson")
 
 summary(m_saturated)
 
@@ -168,11 +184,25 @@ top_model
 # Summarize top model
 summary(top_model)
 
+# psudo R^2
+1- summary(top_model)$deviance / summary(top_model)$null.deviance
+
 ```
 
 ## 4) Create a map of the predicted *Abies alba* counts (2 Point)
 
+
 ```{r, warning=FALSE, message=F}
+library(gridExtra)
+
+#predict to a raster
+abies_predited <- predict(abies_stack, top_model, progress='text')
+
+# comparing orginal and predicted map
+mapview(abies_ras)
+mapview(abies_predited)
+
+
 
 ```
 
