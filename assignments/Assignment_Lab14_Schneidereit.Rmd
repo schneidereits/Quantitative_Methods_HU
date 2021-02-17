@@ -1,0 +1,69 @@
+---
+title: "Assignment 14"
+author: "Shawn Schneidereit"
+date: "17.2.2021"
+output: html_document
+---
+
+**note** that the .Rmd can be found on my [personal repo](https://github.com/schneidereits/Quantitative_Methods_HU/tree/main/assignments) for the course
+
+```{r, include= FALSE}
+library(tidyverse)
+library(dplyr)
+library(readr)
+library(viridis)
+library(ggeffects)
+library(FactoMineR)
+library(MASS)
+library(raster)
+library(rasterVis)
+library(GGally)
+```
+
+## Climate station data for Germany
+
+For this exercise we will use long-term average climate station data from the German Meteorological Service (DWD). Monthly and yearly average precipitation (mm) data are available for the period 1981 and 2010.
+
+http://www.dwd.de/DE/leistungen/klimadatendeutschland/langj_mittelwerte.html
+
+ftp://ftp-cdc.dwd.de/pub/CDC/
+
+In this exercise, you are asked to create precipitation maps for the state of Brandenburg from weather station data using two different methods: 1) inverse distance weighted interpolation, and 2) ordinary kriging. Plot and compare the results/maps and semi-variograms. 
+
+### 1. Create a SpatialPointsDataFrame.
+
+Create a SpatialPointsDataFrame from the precipitation dataset `"nieder_1981-2010_aktStandort.csv"`. The precipitation dataset contains longitude (column `x`) and latitude (column `y`). The coordinate reference system is geographic WGS-84 (EPSG code 4326). In proj4 format this can be written as `"+init=epsg:4326"`. To analyze spatial distances you need to transform this dataset to an equal area projection, e.g. `"+init=epsg:3035"`. Note, use only the station data from Brandenburg (see `state` column).
+
+```{r}
+
+#import data
+rain <- read_csv("~/Documents/humbolt/quantitative_methods/pc_lab/data/nieder_1981-2010_aktStandort.csv")
+View(rain)
+
+# filter for brandenburg
+rain <- rain %>% 
+  filter(state == "Brandenburg") %>% 
+  rename(long = x,
+         lat = y)
+
+rain_sp <- SpatialPoints(rain, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
+
+rain_sp <- SpatialPoints(rain, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+```
+
+
+### 2. Create a map of annual precipitation (column `year`) using Inverse Distance Weighted Interpolation.
+
+```{r, fig.align='center', fig.height=4, fig.width=4}
+
+```
+
+### 3. Create a map of annual precipitation (column `year`) using ordinary kriging with constant intercept.
+
+```{r}
+
+```
+
+
+
+
