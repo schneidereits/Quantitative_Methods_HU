@@ -128,11 +128,11 @@ abies_stack <- raster::stack(clim, abies_ras)
 # not best practice but hard coded to sample 20% of total cells (ncell)
 abies_sample <- sampleRandom(abies_stack, size = 23219*.2)
 
-<<<<<<< HEAD
+
 abies.df <- as.data.frame(abies_sample)
-=======
+
 abies.df <- as.data.frame(abies_sample) 
->>>>>>> 6e3aee45ec4f3bc2469d639fb304d0806a525478
+
 head(abies.df)
 
 # rename variables 
@@ -143,12 +143,12 @@ names(abies.df) <- c("AnnualMeanTemperature", "MeanDiurnalRange", "Isothermality
 abies.df <- as.data.frame(abies_stack)
 abies_sample <- abies.df %>% 
   dplyr::group_by(layer) %>% 
-<<<<<<< HEAD
+
   dplyr::sample_frac(layer, 20)
-=======
+
   dplyr::sample_frac(layer, 20) %>% 
   mutate(Abies = layer)
->>>>>>> 6e3aee45ec4f3bc2469d639fb304d0806a525478
+
 
 
 
@@ -162,28 +162,28 @@ Use a GLM to predict the occurrence of *Abies alba* from bioclim data. You can h
 
 ```{r}
 
-<<<<<<< HEAD
+
 ggplot(abies.df, aes(x = Abies)) +
          geom_density()
 
 m1 <- glm(data = abies.df, Abies ~ AnnualMeanTemperature + AnnualPrecipitation, family = "poisson")
-=======
+
 ggplot(abies_sample, aes(x = Abies)) +
          geom_density()
 
 m1 <- glm(data = abies_sample, Abies ~ AnnualMeanTemperature + AnnualPrecipitation, family = "poisson")
->>>>>>> 6e3aee45ec4f3bc2469d639fb304d0806a525478
+
 summary(m1)
 
 # install.packages("MuMIn")
 library(MuMIn)
 
 # create semi-saturated model, with the broader variables based on my novice guess, I a priori think will be more relavent
-<<<<<<< HEAD
+
 m_saturated <- glm(data = abies.df, Abies ~ AnnualMeanTemperature + Isothermality + TemperatureSeasonality + TemperatureAnnualRange + AnnualPrecipitation + PrecipitationSeasonality, family = "poisson")
-=======
+
 m_saturated <- glm(data = abies_sample, Abies ~ AnnualMeanTemperature + Isothermality + TemperatureSeasonality + TemperatureAnnualRange + AnnualPrecipitation + PrecipitationSeasonality, family = "poisson")
->>>>>>> 6e3aee45ec4f3bc2469d639fb304d0806a525478
+
 
 summary(m_saturated)
 
