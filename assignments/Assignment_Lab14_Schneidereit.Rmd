@@ -36,19 +36,44 @@ Create a SpatialPointsDataFrame from the precipitation dataset `"nieder_1981-201
 
 ```{r}
 
+# Managing and manipulating vector data
+library(sp)
+# Reading and writing spatial data
+library(rgdal)
+# Reading and manipulating raster data
+library(raster)
+# Map visualization
+library(mapview)
+# Spatial analysis and modeling utilities
+library(spatialEco)
+# Managing and manipulating vector data
+library(sf)
+#
+library(mapview)
+
 #import data
 rain <- read_csv("~/Documents/humbolt/quantitative_methods/pc_lab/data/nieder_1981-2010_aktStandort.csv")
-View(rain)
+head(rain)
 
 # filter for brandenburg
 rain <- rain %>% 
-  filter(state == "Brandenburg") %>% 
-  rename(long = x,
-         lat = y)
+  filter(state == "Brandenburg") 
+
+#creating seperate df
+rain_df <- rain
+
+coordinates(rain) <- ~x+y
+proj4string(rain) <- CRS("+init=epsg:3035")
+
 
 rain_sp <- SpatialPoints(rain, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
 
-rain_sp <- SpatialPoints(rain, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+
+# transforming the abies data to an equal area projection
+rain_sp <- spTransform(rain_sp, crs("+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs"))
+
+mapview(rain_sp)
+mapview(rain_sp, zcol="year")
 ```
 
 
@@ -56,7 +81,29 @@ rain_sp <- SpatialPoints(rain, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=W
 
 ```{r, fig.align='center', fig.height=4, fig.width=4}
 
+xnew <- seq(rain@bbox[1, 1], rain@bbox[1, 2], length.out = 50)
+ynew <- seq(rain@bbox[2, 1], rain@bbox[2, 2], length.out = 50)
+
+gridnew <- expand.grid(xnew, ynew)
+
+names(gridnew) <- c("x", "y")
+coordinates(gridnew) <- ~x+y
+proj4string(gridnew) <- CRS("+init=epsg:3035")
+gridded(gridnew) <- TRUE
+
+
+rain.grid <- SpatialPixelsDataFrame(points=gridnew[,c("x", "y")],
+                                     data=gridnew[,(1:2)],
+                                     proj4string = CRS(proj4string(rain_sp)))
+
+mapview(rain.grid, zcol="year")
+
+library(gstat)
+zn.idw <- idw(year ~ 1, rain, rain_sp, idp = 2)
+mapview(zn.idw, zcol='var1.pred', layer.name = "year")
+
 ```
+
 
 ### 3. Create a map of annual precipitation (column `year`) using ordinary kriging with constant intercept.
 
