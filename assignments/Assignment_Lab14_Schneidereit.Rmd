@@ -70,7 +70,7 @@ rain_sp <- SpatialPoints(rain, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_
 
 
 # transforming the abies data to an equal area projection
-rain_sp <- spTransform(rain_sp, crs("+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs"))
+rain_sp <- spTransform(rain_sp, crs("+init=epsg:3035"))
 
 mapview(rain_sp)
 mapview(rain_sp, zcol="year")
@@ -81,10 +81,21 @@ mapview(rain_sp, zcol="year")
 
 ```{r, fig.align='center', fig.height=4, fig.width=4}
 
-xnew <- seq(rain@bbox[1, 1], rain@bbox[1, 2], length.out = 50)
-ynew <- seq(rain@bbox[2, 1], rain@bbox[2, 2], length.out = 50)
+xnew <- seq(rain_sp@bbox[1, 1], rain_sp@bbox[1, 2], length.out = 50)
+ynew <- seq(rain_sp@bbox[2, 1], rain_sp@bbox[2, 2], length.out = 50)
 
 gridnew <- expand.grid(xnew, ynew)
+
+gridnew <- SpatialPixels(points=SpatialPoints(gridnew),
+proj4string = CRS("+init=epsg:3035"))
+
+plot(gridnew$x, gridnew$y, cex=0.1, pch=19)
+
+gridnew <- SpatialPixelsDataFrame(points=gridnew,
+data=rain_sp[,-(4:5)],
+proj4string = CRS(proj4string(gridnew)))
+
+
 
 names(gridnew) <- c("x", "y")
 coordinates(gridnew) <- ~x+y
