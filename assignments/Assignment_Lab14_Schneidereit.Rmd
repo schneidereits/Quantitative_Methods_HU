@@ -48,8 +48,8 @@ library(mapview)
 library(spatialEco)
 # Managing and manipulating vector data
 library(sf)
-#
-library(mapview)
+library(gstat)
+
 
 #import data
 rain <- read_csv("~/Documents/humbolt/quantitative_methods/pc_lab/data/nieder_1981-2010_aktStandort.csv")
@@ -57,23 +57,29 @@ head(rain)
 
 # filter for brandenburg
 rain <- rain %>% 
-  filter(state == "Brandenburg") 
+  dplyr::filter(state == "Brandenburg")
 
 #creating seperate df
 rain_df <- rain
 
-coordinates(rain) <- ~x+y
-proj4string(rain) <- CRS("+init=epsg:3035")
 
+coords <- rain[ , c("x", "y")]
+coords_sp <- SpatialPoints(coords, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+# vis abies occurance
+#proj4string(rain) <- CRS("+init=epsg:4326")
 
-rain_sp <- SpatialPoints(rain, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
+rain_sp <- SpatialPointsDataFrame(coords = coords, data=rain_df,
+                                  proj4string = CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +towgs84=0,0,0"))
 
 
 # transforming the abies data to an equal area projection
 rain_sp <- spTransform(rain_sp, crs("+init=epsg:3035"))
 
-mapview(rain_sp)
-mapview(rain_sp, zcol="year")
+plot(rain_sp)
+
+# for some reason I am getting a library error that I cant quite figure out and that has no help online. later one Mapview seems to work just fine though.
+#mapview::mapview(rain_sp)
+#mapview(rain_sp, zcol="year")
 ```
 
 
@@ -87,31 +93,21 @@ ynew <- seq(rain_sp@bbox[2, 1], rain_sp@bbox[2, 2], length.out = 50)
 gridnew <- expand.grid(xnew, ynew)
 
 gridnew <- SpatialPixels(points=SpatialPoints(gridnew),
-proj4string = CRS("+init=epsg:3035"))
+                         proj4string = CRS("+init=epsg:3035"))
 
-plot(gridnew$x, gridnew$y, cex=0.1, pch=19)
+# cant get the spatial data pixel frame to work, but it seem like I can caluculate the idw without any problems??
+#gridnew <- SpatialPixelsDataFrame(points=gridnew,
+#data=rain_sp[,-(4:5)],
+#proj4string = CRS(proj4string(gridnew)))
 
-gridnew <- SpatialPixelsDataFrame(points=gridnew,
-data=rain_sp[,-(4:5)],
-proj4string = CRS(proj4string(gridnew)))
+idw <- gstat::idw(formula = year ~ 1, locations = rain_sp, newdata = gridnew, idp = 1)
 
+idw_df <- as.data.frame(idw)
 
+plot(idw)
+mapview(idw, zcol='var1.pred', layer.name = "year")
+# I assume the jagged edges occure from converting to the equal distancw CRS?
 
-names(gridnew) <- c("x", "y")
-coordinates(gridnew) <- ~x+y
-proj4string(gridnew) <- CRS("+init=epsg:3035")
-gridded(gridnew) <- TRUE
-
-
-rain.grid <- SpatialPixelsDataFrame(points=gridnew[,c("x", "y")],
-                                     data=gridnew[,(1:2)],
-                                     proj4string = CRS(proj4string(rain_sp)))
-
-mapview(rain.grid, zcol="year")
-
-library(gstat)
-zn.idw <- idw(year ~ 1, rain, rain_sp, idp = 2)
-mapview(zn.idw, zcol='var1.pred', layer.name = "year")
 
 ```
 
@@ -119,6 +115,19 @@ mapview(zn.idw, zcol='var1.pred', layer.name = "year")
 ### 3. Create a map of annual precipitation (column `year`) using ordinary kriging with constant intercept.
 
 ```{r}
+rain_vario <- variogram(year ~ 1, data = rain_sp)
+
+plot(rain_vario)
+
+rain_vario_fit <- fit.variogram(rain_vario, vgm(1, "Sph", 60000, 1))
+
+plot(rain_vario, rain_vario_fit)
+# looks like a decent fit
+
+rain_kriging <- krige(formula = year ~ 1, rain_sp, gridnew, rain_vario_fit) 
+
+mapview::mapview(rain_kriging, zcol='var1.pred', layer.name = "year")
+mapview::mapview(rain_kriging, zcol='var1.var', layer.name = "year")
 
 ```
 
