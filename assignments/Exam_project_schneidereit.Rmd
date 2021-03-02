@@ -1,0 +1,95 @@
+---
+title: "Asignment Week 1"
+author: "Shawn Schneidereit"
+date: "2.11.2020"
+output: html_document
+---
+
+## **note** that the .Rmd can be found on my [personal repo](https://github.com/schneidereits/Quantitative_Methods_HU/blob/main/pc_lab/assignment_week_01.Rmd) for the corse
+
+
+```{r, include= FALSE}
+library(tidyverse)
+library(dplyr)
+library(readr)
+library(viridis)
+library(ggeffects)
+library(GGally)
+library(FactoMineR) # pca?
+```
+
+# Constraining the effects of topography and climate on climate change sensitivity of glaciers in Tibet
+
+### 1.Data import and wrangeling
+
+
+```{r}
+glacier <- read_csv("~/Documents/humbolt/quantitative_methods/assignments/glacier_sensitivity.csv") %>%
+  na.exclude
+
+
+ggplot(data=glacier, aes_string(x = id, y = "")) + geom_line()
+
+colnames(glacier) 
+
+(corr_plot <- ggpairs(data = glacier, columns = c(2:9,22:25,38:39,52:53,66:74)))
+        
+
+# pca
+pca <- glacier[c(2:9,22:25,38:39,52:53,66:74)] %>% 
+  dplyr::select(-orientation) # need to remove as it is a character
+str(pca)
+
+# plot of pc1 and pc2
+res.pca <- PCA(pca[,c(1:24)], scale.unit = TRUE, ncp = 5, graph = TRUE)
+# based on this PCA we can intially see that ELA is closly aligned with PC1 and has a strong positive orientation with elev mean, while being diamertically opposed to the agregated temperature and precipitation measures. Geo-physical conditions (aside from elev mean on PC1) tend to be ordinated on PC2 with the strongers factors being glacier area, length, and summit height/max elevation (the same redundent metric...). Less promising is the fact that dELA does not load on either PC1 or PC2, and only accounts for a small amount of variance, as it has a small eigenvector.
+
+
+#plot of pc1 and pc3
+res.pca <- PCA(pca[,c(1:24)], scale.unit = TRUE, ncp = 5, graph = TRUE, axes = c(1,3))
+# based on this plot of PC1 and PC2, we can see that snow precipitation is the main variable contributing to PC3s explained variation. Furthermore the ordination of variables on PC1 are slightly altered, but some overall take aways are that .......
+
+pca <- prcomp(pca, scale. = T)
+summary(pca)
+
+
+
+var_exp <- data.frame(pc = c(2:6,8:9,22:25,38:39,52:53,66:74),
+                      var_exp = pca$sdev^2 / sum(pca$sdev^2))
+
+# add the variances cumulatively
+var_exp$var_exp_cumsum <- cumsum(var_exp$var_exp)
+var_exp
+
+ggplot(var_exp) +
+  geom_bar(aes(x = pc, y = var_exp), stat = "identity") +
+  geom_line(aes(x = pc, y = var_exp_cumsum)) +
+  theme_classic()
+
+
+```
+
+### Q1.	Which are the most important topographical and climatological drivers of glacier equilibrium line altitude (ELA)?
+
+```{r}
+
+```
+
+### Q2.	Can we explain ELA changes since the Little Ice Age with topographical and climatological variables?
+
+```{r}
+
+```
+
+### 4. 
+
+```{r}
+
+```
+
+### 5. 
+
+```{r}
+
+```
+
