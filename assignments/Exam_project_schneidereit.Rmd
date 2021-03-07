@@ -9,14 +9,13 @@ output: html_document
 
 
 ```{r, include= FALSE}
-library(tidyverse)
-library(dplyr)
 library(readr)
 library(viridis)
 library(ggeffects)
 library(GGally)
 library(FactoMineR) # pca?
 library(lme4)
+library(tidyverse)
 ```
 
 # Constraining the effects of topography and climate on climate change sensitivity of glaciers in Tibet
@@ -31,27 +30,6 @@ Multiple sources confirm that overall there is a lack of knowledge on climatic d
 ```{r}
 glacier <- read_csv("~/Documents/humbolt/quantitative_methods/assignments/glacier_sensitivity.csv") %>%
   na.exclude 
-
-
-#ggplot(data=glacier, aes_string(x = id, y = "")) + geom_line()
-
-colnames(glacier) 
-
-(corr_plot <- ggpairs(data = glacier, columns = c(2:9,22:25,38:39,52:53,66:74)))
-        
-
-
-
-
-```
-
-### Q1.	Which are the most important topographical and climatological drivers of glacier equilibrium line altitude (ELA)?
-
-#### Mixed effects model with random effects
-
-In this first section, I chose to create a Mixed effects model with random effects (lme4 package), where all variables where chosen based on a priori knowelge gained from the readings and the exploratory correlation plot. The methodoological advantage of this approach is that through including the random effects correlations between data coming from specific morphology types and geographical orientations can be accounted for, by treating them as a grouping factor. While this prevents us from explicitly assessng the impacts of morphology and geographic orientation, it still allows us to see how it is influencing the observed patterns in other varibales. In the final section of this analysis (the automated variable selection) morphology and geographic orientation are left as fixed effects, so that I have them once as a fixed and once as a random effect, to allow for compairson between the two secarios. 
-
-```{r}
 
 glacier_scaled <- glacier %>% 
   # adding a new variable for temperature variability; a factor mentioned to be important in multiple papers
@@ -78,13 +56,39 @@ glacier_scaled <- glacier %>%
          Elev_max = scale(Elev_max, center = T, scale = T),
          Elev_mean = scale(Elev_mean, center = T, scale = T))
 
+
+
+
+#ggplot(data=glacier, aes_string(x = id, y = "")) + geom_line()
+
+colnames(glacier) 
+
+(corr_plot <- ggpairs(data = glacier, columns = c(2:9,22:25,38:39,52:53,66:74)))
+        
+
+
+
+
+```
+
+### Q1.	Which are the most important topographical and climatological drivers of glacier equilibrium line altitude (ELA)?
+
+#### Mixed effects model with random effects
+
+In this first section, I chose to create a Mixed effects model with random effects (lme4 package), where all variables where chosen based on a priori knowelge gained from the readings and the exploratory correlation plot. The methodoological advantage of this approach is that through including the random effects correlations between data coming from specific morphology types and geographical orientations can be accounted for, by treating them as a grouping factor. While this prevents us from explicitly assessng the impacts of morphology and geographic orientation, it still allows us to see how it is influencing the observed patterns in other varibales. In the final section of this analysis (the automated variable selection) morphology and geographic orientation are left as fixed effects, so that I have them once as a fixed and once as a random effect, to allow for compairson between the two secarios. 
+
+```{r}
+
+
+
 m_lme4 <- lmer(ELA ~ debris_cov + length + area + P_snow + T_mean_mea.yr + Slope_mean + Elev_max + Elev_mean + (1|morph_type) + (1|orientation), data = glacier_scaled) 
 summary(m_lme4)
 
-library(sjPlot)
-library
+library(dotwhisker)
 
-plot_model(m_lme4, type = "re", show.values = TRUE)
+
+dwplot(m_lme4) +
+   geom_vline(xintercept = 0, colour = "grey60", linetype = 2)
 ```
 
 
