@@ -76,19 +76,51 @@ colnames(glacier)
 
 #### Mixed effects model with random effects
 
-In this first section, I chose to create a Mixed effects model with random effects (lme4 package), where all variables where chosen based on a priori knowelge gained from the readings and the exploratory correlation plot. The methodoological advantage of this approach is that through including the random effects correlations between data coming from specific morphology types and geographical orientations can be accounted for, by treating them as a grouping factor. While this prevents us from explicitly assessng the impacts of morphology and geographic orientation, it still allows us to see how it is influencing the observed patterns in other varibales. In the final section of this analysis (the automated variable selection) morphology and geographic orientation are left as fixed effects, so that I have them once as a fixed and once as a random effect, to allow for compairson between the two secarios. 
+In this first section, I chose to create a Mixed effects model with random effects (lme4 package), where all variables where chosen based on a priori knowelge gained from the readings and the exploratory correlation plot. The methodoological advantage of this approach is that through including the random effects, correlations between data coming from specific morphology types and geographical orientations can be accounted for, by treating them as a grouping factor. While this prevents us from explicitly assessng the impacts of morphology and geographic orientation, it still allows us to see how it is influencing the observed patterns in other varibales. In the final section of this analysis (the automated variable selection) morphology and geographic orientation are left as fixed effects, so that I have them once as a fixed and once as a random effect, to allow for compairson between the two secarios. As the Distribution of ELA had a slight negative skew, I also tried running a GLM with a inverse gaussian distribution (link = "1/mu^2"), but encoured the error that the "PIRLS step-halvings failed to reduce deviance in pwrssUpdate", to which I did not find a solution. 
 
 ```{r}
 
+hist(glacier_scaled$ELA) # there is a negative skew to the data, but overall a gaussian distibution looks appropriate
 
-
-m_lme4 <- lmer(ELA ~ debris_cov + length + area + P_snow + P_monsoon + P_not_monsoon +  T_mean_mea.yr +  T_variability + Slope_mean + Elev_max + Elev_mean + (1|morph_type) + (1|orientation), data = glacier_scaled) 
+m_lme4 <- lmer(ELA ~ debris_cov + length + area + P_snow + P_monsoon + P_not_monsoon +  T_mean_mea.yr +  T_variability +                      Slope_mean + Elev_max + Elev_mean + (1|morph_type) + (1|orientation), 
+               data = glacier_scaled) 
 summary(m_lme4)
 
 # check out variable co-lineararity 
 
+plot(m_lme4)
+# the residual vs fitted plot shows a mostly flat and even distribution of points, with greater diviances seen at the lower spectrum of points, likely due to the negative skew described above
+
+qqnorm(resid(m_lme4))
+qqline(resid(m_lme4))
+# When checking the QQ-plot it is seen that there is a left tail at lower bonds and a right tail at the upper bonds. Following an ad hoc transformation of the dependant variable ELA, this observed trend only showed a very marginal improvment, so I decided to keep ELA in its untransformed state.  
+
+
+
 
 dwplot(m_lme4) +
+   geom_vline(xintercept = 0, colour = "grey60", linetype = 2)
+```
+
+```{r}
+
+hist(glacier_scaled$dELA) # there is a stronger skew to the data. While again an inverse Gaussian distribution seems approaprite, this was also not possible. Instead I compaired a the model with a normal Gaussian and a Possion distribution and found that the Possion had a better distribution of residuals.
+
+m_lme4_d <- glmer(dELA ~ debris_cov + length + area + P_snow + P_monsoon + P_not_monsoon +  T_mean_mea.yr +  T_variability +                      Slope_mean + Elev_max + Elev_mean + (1|morph_type) + (1|orientation), 
+                family = poisson  ,data = glacier_scaled) 
+summary(m_lme4_d)
+
+# check out variable co-lineararity 
+
+plot(m_lme4_d)
+# the residual vs fitted plot shows a mostly flat and even distribution of points, with some outlying point at intermidiate values
+
+qqnorm(resid(m_lme4_d))
+qqline(resid(m_lme4_d))
+# When checking the QQ-plot it is seen that there is slight tail at the upper bound, but overall this is a significant improvement over the gaussian distribution.
+
+
+dwplot(m_lme4_d) +
    geom_vline(xintercept = 0, colour = "grey60", linetype = 2)
 ```
 
@@ -112,7 +144,7 @@ res.pca <- PCA(pca[,c(1:22)], scale.unit = TRUE, ncp = 5, graph = TRUE, axes = c
 
 pca <- prcomp(pca, scale. = T)
 summary(pca)
-pca$rotation
+pca$rotation[,1:6]
 
 
 var_exp <- data.frame(pc = c(1:23),
@@ -127,6 +159,8 @@ ggplot(var_exp) +
   geom_line(aes(x = pc, y = var_exp_cumsum)) +
   theme_classic()
 
+# Following the Elbow method, it seems like 3-5 PCs seems like an approapriate cutoff point. Despite being more difficult to interpret the final results, I decided to include 5 PCs, due to PCs 4 and 5 increasing the overall variance explained from ~80% to 90%. This also helps to ensure that the large number of variables in the model are captured in the PCs.
+
 # scores
 pca_scores <- data.frame(pca$x)
 head(pca_scores)
@@ -137,8 +171,26 @@ ggpairs(pca_scores_df[,c(4:6,8:9,22:25,38:39,52:53,66:75,76:80)]) # first 5 Pcs
 m_pca <- glm(ELA ~ PC1 + PC2 + PC3 + PC4 + PC5, data = pca_scores_df)
 summary(m_pca)
 
+plot(m_pca)
+# the residual vs fitted plot shows a mostly flat and even distribution of points, with some outlying point at intermidiate values
 
+
+dwplot(m_pca) +
+   geom_vline(xintercept = 0, colour = "grey60", linetype = 2)
+
+# dELA model
+m_pca <- glm(dELA ~ PC1 + PC2 + PC3 + PC4 + PC5, family = "poisson", data = pca_scores_df)
+summary(m_pca)
+
+plot(m_pca)
+# the residual vs fitted plot shows a mostly flat and even distribution of points, with some outlying point at intermidiate values
+
+
+dwplot(m_pca) +
+   geom_vline(xintercept = 0, colour = "grey60", linetype = 2)
 ```
+
+
 
 ### Automated variable selection 
 
