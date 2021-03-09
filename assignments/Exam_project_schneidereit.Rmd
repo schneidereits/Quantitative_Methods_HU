@@ -65,6 +65,9 @@ glacier_scaled <- glacier %>%
 colnames(glacier) 
 
 (corr_plot <- ggpairs(data = glacier, columns = c(2:9,22:25,38:39,52:53,66:74)))
+#corplot?
+corrplot.mixed(cor1[,2:9,22:25,38:39,52:53,66:74], lower.col = “black”, number.cex = .7)
+
         
 
 
@@ -225,8 +228,7 @@ For the automated variable variable I focused on variables that I previously fou
 library(MuMIn)
 # create semi-saturated model, with the broader variables based on my novice guess, I a priori think will be more relavent
 m_saturated <-
-  glm( ELA ~ debris_cov  + morph_type + orientation + length  + area  + P_snow + P_year + P_monsoon + P_not_monsoon +
-  T_MIN_mean_monsoon + T_MIN_mean_not_monsoon + T_MAX_mean_monsoon + T_MAX_mean_not_monsoon + T_mean_mea.yr + T_mean_monsoon +   T_mean_not_monsoon + Slope_min + Slope_max + Slope_mean + Elev_min + Elev_max + Elev_mean + T_variability,
+  glm( ELA ~ debris_cov  + morph_type + orientation + length  + area  + P_snow + P_year + P_monsoon + P_not_monsoon +                    T_mean_mea.yr + T_mean_monsoon +   T_mean_not_monsoon + Slope_min + Slope_max + Slope_mean + Elev_min + Elev_max +              Elev_mean + T_variability, # + T_MIN_mean_monsoon + T_MIN_mean_not_monsoon + T_MAX_mean_monsoon  T_MAX_mean_not_monsoon ; taken out due to computational constraints
   data = glacier_scaled,
   family = "gaussian") 
 
