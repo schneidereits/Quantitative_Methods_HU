@@ -17,11 +17,17 @@ library(FactoMineR) # pca?
 library(lme4)
 library(tidyverse)
 library(dotwhisker)
+library(MuMIn)
+library(MCMCglmm)
+
 ```
 
 # Constraining the effects of topography and climate on climate change sensitivity of glaciers in Tibet
 
-In this analysis I attempted to justify all modelling structure and variable selection decisions made. As I quite unfamiliar with climatic modelling and glacier dynamics, some of these decisions may we sub-optimal or completely wrong. Yet, these decisions where made to the best of my abilites, without going over the top on background research, overall my models should have a cohernt stucture and suffienct work flow documentaion. 
+The Tibetan Plateau region is home to the greatest amount of non-polar glaciers, which are also highly sensitive to climate change and has recently been experiencing the greatest rates of mass losses. These glaciers are primary freshwater sources to major Asian rivers, with increased rates of melting increasing the risks of floods and other geohazards to some of the world’s most densely populated regions. Yet the geophysical and atmospheric conditions driving changes in Tibetan plateau glacier mass balance remain relatively understudied, with uncertainties in which variables can best predict glacier mass change. In this analysis I will use three different modelling approaches to assess which topographical and climatological drives are most important in explaining changes in glacier equilibrium line altitude (ELA) and whether these drives can be used to explain glacier ELA changes since the little ice age. The first approach uses a Mixed effects model with random effects, where all variables where chosen based on a priori knowledge gained from the readings and an exploratory correlation plot. As the exploratory correlation plot showed that many variables displayed high levels of collinearity/multicollinearity, I decided to create a model using principal components from a PCA, to preserve all available variables, while not violating any assumptions of variable collinearity and codependence. Finally, I decided to use an automatic variable selection method (MUMIn), where I included the maximum number of variables possible, within the computational limits of my PC. While I believe that xxx method best models which variables influence ELA and dELA, because xxx, I synthesize the results all three models to judge xxx. 
+
+In this analysis I attempted to justify all modelling structure and variable selection decisions made. As I quite unfamiliar with climatic modelling and glacier dynamics, some of these decisions may be sub-optimal. Yet, these decisions were made to the best of my abilities, without going over the top on background research and overall, my models should have a coherent structure and sufficient workflow documentation. In none of the preliminary readings, did I encountered the temperature or precipitation in a specific month singled out to be of particular importance for glacier ELA. Therefore, I decided to exclude all monthly climatic variables and only focus on the aggregated factors. Along with the provided variables, I also included a new variable called temperature variability, as my preliminary readings highlighted its potential importance (Brun, et. al., 2017) and I was able to compute it with the provided dataset.  
+
  
 Multiple sources confirm that overall there is a lack of knowledge on climatic data and their influence on the TP, due to a lack of Permanente meteorological weather stations in the TP, with the influence of Monsoon being aknoweleged (Maussion et. al., 2014).
 
@@ -64,11 +70,11 @@ glacier_scaled <- glacier %>%
 
 colnames(glacier) 
 
-(corr_plot <- ggpairs(data = glacier, columns = c(2:9,22:25,38:39,52:53,66:74)))
+#(corr_plot <- ggpairs(data = glacier, columns = c(2:9,22:25,38:39,52:53,66:74)))
 #corplot?
-corrplot.mixed(cor1[,2:9,22:25,38:39,52:53,66:74], lower.col = “black”, number.cex = .7)
+#corrplot.mixed(cor1[,2:9,22:25,38:39,52:53,66:74], lower.col = "black" , number.cex = .7)
 
-        
+# Here a number of strong correlations between variables can be seen. Notabale is this Summit and Max elevation seem to be the same variable and that xxxx
 
 
 
@@ -79,7 +85,7 @@ corrplot.mixed(cor1[,2:9,22:25,38:39,52:53,66:74], lower.col = “black”, numb
 
 #### Mixed effects model with random effects
 
-In this first section, I chose to create a Mixed effects model with random effects (lme4 package), where all variables where chosen based on a priori knowelge gained from the readings and the exploratory correlation plot. The methodoological advantage of this approach is that through including the random effects, correlations between data coming from specific morphology types and geographical orientations can be accounted for, by treating them as a grouping factor. While this prevents us from explicitly assessng the impacts of morphology and geographic orientation, it still allows us to see how it is influencing the observed patterns in other varibales. In the final section of this analysis (the automated variable selection) morphology and geographic orientation are left as fixed effects, so that I have them once as a fixed and once as a random effect, to allow for compairson between the two secarios. As the Distribution of ELA had a slight negative skew, I also tried running a GLM with a inverse gaussian distribution (link = "1/mu^2"), but encoured the error that the "PIRLS step-halvings failed to reduce deviance in pwrssUpdate", to which I did not find a solution. 
+In this first section, I chose to create a Mixed effects model with random effects (lme4 package), where all variables where chosen based on a priori knowelge gained from the readings and the exploratory correlation plot. The methodoological advantage of this approach is that through including the random effects, correlations between data coming from specific morphology types and geographical orientations can be accounted for, by treating them as a grouping factor. While this prevents us from explicitly assessing the impacts of morphology and geographic orientation, it still allows us to see how they influence the observed patterns in other varibales. In the final section of this analysis (the automated variable selection) morphology and geographic orientation are left as fixed effects, so that I have them once as a fixed and once as a random effect, to allow for compairson between the two secarios. As the Distribution of ELA had a slight negative skew, I also tried running a GLM with a inverse gaussian distribution (link = "1/mu^2"), but encoured the error that the "PIRLS step-halvings failed to reduce deviance in pwrssUpdate", to which I did not find a solution. 
 
 ```{r}
 
@@ -103,11 +109,16 @@ qqline(resid(m_lme4))
 # When checking the QQ-plot it is seen that there is a left tail at lower bonds and a right tail at the upper bonds. Following an ad hoc transformation of the dependant variable ELA, this observed trend only showed a very marginal improvment, so I decided to keep ELA in its untransformed state.  
 
 
-
-
 dwplot(m_lme4) +
    geom_vline(xintercept = 0, colour = "grey60", linetype = 2)
+
+
+
+
+
 ```
+
+
 
 ```{r}
 
@@ -117,7 +128,7 @@ m_lme4_d <- glmer(dELA ~ debris_cov + length + area + P_snow + P_monsoon + P_not
                 family = poisson  ,data = glacier_scaled) 
 summary(m_lme4_d)
 
-# R squared
+# R squared (conditional)
 r.squaredGLMM(m_lme4_d)
 # The R²(C) is 98.65 %, where the C represents the Conditional R_GLMM² and can be interpreted as a variance explained by the entire model, including both fixed and random effects
 
@@ -133,7 +144,63 @@ qqline(resid(m_lme4_d))
 
 dwplot(m_lme4_d) +
    geom_vline(xintercept = 0, colour = "grey60", linetype = 2)
+
+
 ```
+
+
+Bayesian Models
+
+
+The default prior values assumed in a MCMCglmm are posterior distribution with very large variance values for the fixed effects and a flat (weakly informative) prior. The variances for the random effects are assumed to have inverse-Wishart priors with a very low value for nu (weakly informative). I decided to not dealve deeper into assigning my own priors, due to me having i) little prior knowlege the dyamics / expected values and distributions of variables and ii) a shallow knowelge of the mathimatical underpinnings and practical inplimentation methods for assigning more informative priors
+
+
+
+```{R}
+
+m_bays <- MCMCglmm(ELA ~ debris_cov + length + area + P_snow + P_monsoon + P_not_monsoon +  T_mean_mea.yr +  T_variability +                      Slope_mean + Elev_max + Elev_mean, random = ~ morph_type + orientation, 
+               data = glacier_scaled) 
+
+summary(m_bays)
+
+# R squared
+#r.squaredGLMM(m_bays)
+# Unfortunatly I was not able to figure out access using the r2 with a predefined function, or an official way to cumpute it. Therefore For me bayesian models I do not include r2 values.
+
+# postirior distribution of random effects
+par(mfrow = c(1,2))
+hist(mcmc(m_bays$VCV)[,"morph_type"])
+hist(mcmc(m_bays$VCV)[,"orientation"])
+# The variance can not be equal to zero, but as the mean value is up afainst zero, this can be interpreted as the effect not being of great significance. As the spread of the histograms are reletively narrow, it can be assumed that the distribution is relatively accurate.
+
+# Assesing model convergence through plotting trace and density est. for the intercept
+plot(m_bays$Sol)
+# The trace can be interpreted as the a psudo timeseries of what the model was doing in each of its iterations. As all traces have the fuzzy caterpillar appearance, it can be assumed there is adequate mixing with overall convergence being met. The density plot shows the postierer distribution of each the model predicted for each variable in each itteration. If the distribution crosses zero, the variable can be assumed to be non-significant and the spread of the distribution convays the overall accuracy of the predicted variable. 
+
+```
+
+```{R}
+
+m_bays_d <- MCMCglmm(dELA ~ debris_cov + length + area + P_snow + P_monsoon + P_not_monsoon +  T_mean_mea.yr +  T_variability + Slope_mean + Elev_max + Elev_mean, random = ~ morph_type + orientation,  data = glacier_scaled) 
+
+summary(m_bays_d)
+
+# R squared
+#r.squaredGLMM(m_bays_d)
+# Unfortunatly I was not able to figure out access using the r2 with a predefined function, or an official way to cumpute it. Therefore For me bayesian models I do not include r2 values.
+
+# postirior distribution of random effects
+par(mfrow = c(1,2))
+hist(mcmc(m_bays_d$VCV)[,"morph_type"])
+hist(mcmc(m_bays_d$VCV)[,"orientation"])
+# The variance can not be equal to zero, but as the mean value is up afainst zero, this can be interpreted as the effect not being of great significance. As the spread of the histograms are reletively narrow, it can be assumed that the distribution is relatively accurate.
+
+# Assesing model convergence through plotting trace and density est. for the intercept
+plot(m_bays_d$Sol)
+# The trace can be interpreted as the a psudo timeseries of what the model was doing in each of its iterations. As all traces have the fuzzy caterpillar appearance, it can be assumed there is adequate mixing with overall convergence being met. The density plot shows the postierer distribution of each the model predicted for each variable in each itteration. If the distribution crosses zero, the variable can be assumed to be non-significant and the spread of the distribution convays the overall accuracy of the predicted variable. 
+
+```
+
 
 
 #### Q1b PCA 
@@ -183,11 +250,11 @@ pca_scores <- data.frame(pca$x)
 head(pca_scores)
 
 pca_scores_df <- cbind(glacier_scaled, pca_scores)
-ggpairs(pca_scores_df[,c(4:6,8:9,22:25,38:39,52:53,66:75,76:80)]) # first 5 Pcs
+#ggpairs(pca_scores_df[,c(4:6,8:9,22:25,38:39,52:53,66:75,76:80)]) # first 5 Pcs
 
 m_pca <- glm(ELA ~ PC1 + PC2 + PC3 + PC4 + PC5, data = pca_scores_df)
 summary(m_pca)
-# Here we see that PCs 1,2, and 4 have the strongest effect size and large predictive power for ELA. Based on the caracterization of which variables are represented by each PC, this means that tempurature, preciptiation, and slope (and to a smaller extend catchment length, area, and elevation) are the most important variables. Out of the three PCs, PC1 (tempurature variables), are by far the most important with a effect size of -65.17 (Std. error 0.88). PCs 2 (precipitation) and 4 (slope) have effect sizes of 17.78 (Std. error 1.35) and -24.04 (Std. error 2.27) respectively. 
+# Here we see that PCs 1,2, and 4 have the strongest effect size and large predictive power for ELA. Based on the caracterization of which variables are represented by each PC, this means that tempurature, geophysical conditions, and slope (and to a smaller extend catchment length, area, and elevation) are the most important variables. Out of the three PCs, PC1 (tempurature variables), are by far the most important with a effect size of -65.17 (Std. error 0.88). PCs 2 (geophysical conditions) and 4 (slope) have effect sizes of 17.78 (Std. error 1.35) and -24.04 (Std. error 2.27) respectively. 
 
 # R squared
 r.squaredGLMM(m_pca)
@@ -221,29 +288,43 @@ dwplot(m_pca_d) +
 
 ### Automated variable selection 
 
-For the automated variable variable I focused on variables that I previously found to be strong predictors of ELA, aswell as the deagrigated forms of temperature and precipitation metrics. While potential interaction between temperature and precipitation variables are likely to exist, these were not included in the saturated model, as just including variables with no interactions already brought my computer to the edges of its computational limits. 
+For the automated variable variable I focused on variables that I previously found to be strong predictors of ELA, aswell as the de-agrigated forms of temperature and precipitation metrics. While potential interaction between temperature and precipitation variables are likely to exist, these were not included in the saturated model, as just including a reduced list of variables with no interactions, already brought my computer to the edges of its computational limits. 
 
 ```{r}
 
-library(MuMIn)
-# create semi-saturated model, with the broader variables based on my novice guess, I a priori think will be more relavent
+# create semi-saturated model, with the broader variables based on my novice guess. These variables where selected based on a priori assumptions on what I thought would be  will be more relavent to include, based on the outputs of my previous models and exploratory analysis
 m_saturated <-
-  glm( ELA ~ debris_cov  + morph_type + orientation + length  + area  + P_snow + P_year + P_monsoon + P_not_monsoon +                    T_mean_mea.yr + T_mean_monsoon +   T_mean_not_monsoon + Slope_min + Slope_max + Slope_mean + Elev_min + Elev_max +              Elev_mean + T_variability, # + T_MIN_mean_monsoon + T_MIN_mean_not_monsoon + T_MAX_mean_monsoon  T_MAX_mean_not_monsoon ; taken out due to computational constraints
+  glm( ELA ~ debris_cov  + morph_type + orientation + length  + P_snow + P_year + P_not_monsoon +                    T_mean_mea.yr + T_mean_monsoon +   T_mean_not_monsoon + Slope_min + Elev_min + Elev_max + Elev_mean, # + T_MIN_mean_monsoon + T_MIN_mean_not_monsoon + T_MAX_mean_monsoon  T_MAX_mean_not_monsoon ; taken out due to computational constraints. Additionally, to get the model to run, area, max/mean slope, t_variability and monsoon precipition also needed to be removed. I chose these variables, as in previous models and in explotatory analysis they tended have low impacts on ELA.
   data = glacier_scaled,
   family = "gaussian") 
 
 summary(m_saturated)
 options(na.action = "na.fail") # Required for dredge to run
-model_dredge <- dredge(m_saturated, beta = F, evaluate = T, rank = AICc)
+# Run all possible model permutations and tank according to AIC values
+m_dredge <- dredge(m_saturated, beta = F, evaluate = T, rank = AICc)
 options(na.action = "na.omit") # set back to default
-head(model_dredge)
-nrow(model_dredge) # 64 models in total
-top_model <- get.models(model_dredge, subset = 1)[[1]]
+head(m_dredge)
+nrow(m_dredge) # 16384 models in total
+top_model <- get.models(m_dredge, subset = 1)[[1]]
 top_model
+
 # Summarize top model
 summary(top_model)
 # psudo R^2
-1- summary(top_model)$deviance / summary(top_model)$null.deviance
+r.squaredGLMM(top_model) # 95.74%
+
+plot(top_model)
+# the residual vs fitted plot shows a mostly flat and even distribution of points, with greater diviances seen at the lower spectrum of points, likely due to the negative skew described above
+
+qqnorm(resid(top_model))
+qqline(resid(top_model))
+# When checking the QQ-plot it is seen that there is a left tail at lower bonds and a right tail at the upper bonds. Following an ad hoc transformation of the dependant variable ELA, this observed trend only showed a very marginal improvment, so I decided to keep ELA in its untransformed state.  
+
+
+dwplot(top_model) +
+   geom_vline(xintercept = 0, colour = "grey60", linetype = 2)
+
+# The automated model section based on AIC ranking of 16384 models, indicated that min and max elevation have are the two most important variables to predict ELA(with effect sizes 183.87 and 90.23 respectily & with small std.errors of 4.49 and 3.34), with large effect sizes relative to other variables. The other next most important variables where the various orientation directions, aswell as preciption and temperature in non monsoon periods. A noteable ommison is mean yearly temperature, which in the glmer model had the highest effect size. This could be attributed to high colinearity between mean temperature and temperature in non monsoon periods, but with temperature in non monsoon periods have a large effect size and therefor being prioritized in the selection. 
 
 ```
 
@@ -251,12 +332,46 @@ summary(top_model)
 
 
 ```{r}
+m_saturated_d <-
+  glm( dELA ~ debris_cov  + morph_type + orientation + length + P_year + P_not_monsoon + T_mean_mea.yr + T_mean_monsoon +   T_mean_not_monsoon + Slope_min + Slope_mean + Elev_min + Elev_max + Elev_mean, # + T_MIN_mean_monsoon + T_MIN_mean_not_monsoon + T_MAX_mean_monsoon  T_MAX_mean_not_monsoon ; taken out due to computational constraints. Additionally, to get the model to run, area, max slope, t_variability snow, and monsoon precipition also needed to be removed. I chose these variables, as in previous models and in explotatory analysis they tended have low impacts on ELA.
+  data = glacier_scaled,
+  family = "gaussian") 
+
+summary(m_saturated_d)
+options(na.action = "na.fail") # Required for dredge to run
+# Run all possible model permutations and tank according to AIC values
+model_dredge_d <- dredge(m_saturated_d, beta = F, evaluate = T, rank = AICc)
+options(na.action = "na.omit") # set back to default
+head(model_dredge_d)
+nrow(model_dredge_d) # 16384 models in total
+top_model_d <- get.models(model_dredge_d, subset = 1)[[1]]
+top_model_d
+
+# Summarize top model
+summary(top_model_d)
+# psudo R^2
+r.squaredGLMM(top_model_d)  # 83.01%
+
+plot(top_model_d)
+# the residual vs fitted plot shows a mostly flat and even distribution of points, with greater diviances seen at the lower spectrum of points, likely due to the negative skew described above
+
+
+# When checking the QQ-plot it is seen that there is a left tail at lower bonds and a right tail at the upper bonds. Following an ad hoc transformation of the dependant variable ELA, this observed trend only showed a very marginal improvment, so I decided to keep ELA in its untransformed state.  
+
+
+dwplot(top_model_d) +
+   geom_vline(xintercept = 0, colour = "grey60", linetype = 2)
 
 ```
 
-### 5. 
+### Compairisons and conclusions 
 
 ```{r}
+
+AICc_df <- AICc(m_lme4, m_lme4_d, m_bays, m_bays_d, m_pca, m_pca_d, top_model, top_model_d) %>% 
+  arrange(AICc)
+
+# Based on a compaired ranking between the modeles contructed under my three approaches, it is seen that automated variable selection performed best for the current ELA, while the lme4 had the lowrst AICc for dELA. 
 
 ```
 
