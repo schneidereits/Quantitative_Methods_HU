@@ -19,12 +19,15 @@ library(tidyverse)
 library(dotwhisker)
 library(MuMIn)
 library(MCMCglmm)
+install.packages("ggcoefstats")
+library(ggcoefstats)
+
 
 ```
 
 # Constraining the effects of topography and climate on climate change sensitivity of glaciers in Tibet
 
-The Tibetan Plateau region is home to the greatest amount of non-polar glaciers, which are also highly sensitive to climate change and has recently been experiencing the greatest rates of mass losses. These glaciers are primary freshwater sources to major Asian rivers, with increased rates of melting increasing the risks of floods and other geohazards to some of the world’s most densely populated regions. Yet the geophysical and atmospheric conditions driving changes in Tibetan plateau glacier mass balance remain relatively understudied, with uncertainties in which variables can best predict glacier mass change. In this analysis I will use three different modelling approaches to assess which topographical and climatological drives are most important in explaining changes in glacier equilibrium line altitude (ELA) and whether these drives can be used to explain glacier ELA changes since the little ice age. The first approach uses a Mixed effects model with random effects, where all variables where chosen based on a priori knowledge gained from the readings and an exploratory correlation plot. As the exploratory correlation plot showed that many variables displayed high levels of collinearity/multicollinearity, I decided to create a model using principal components from a PCA, to preserve all available variables, while not violating any assumptions of variable collinearity and codependence. Finally, I decided to use an automatic variable selection method (MUMIn), where I included the maximum number of variables possible, within the computational limits of my PC. While I believe that xxx method best models which variables influence ELA and dELA, because xxx, I synthesize the results all three models to judge xxx. 
+The Tibetan Plateau region is home to the greatest amount of non-polar glaciers, which are also highly sensitive to climate change and has recently been experiencing the greatest rates of mass losses. These glaciers are primary freshwater sources to major rivers across Asia, with increased rates of melting increasing the risks of floods and other geohazards to some of the world’s most densely populated regions. Yet the geophysical and atmospheric conditions driving changes in Tibetan plateau glacier mass balance remain relatively understudied, with uncertainties in which variables can best predict glacier mass change. In this analysis I will use three different modelling approaches to assess which topographical and climatological drives are most important in explaining changes in glacier equilibrium line altitude (ELA) and whether these drives can be used to explain glacier ELA changes since the little ice age. The first approach uses a Mixed effects model with random effects, where all variables where chosen based on a priori knowledge gained from the readings and an exploratory correlation plot. Following this I constructed an indentically stuctured hirerachical Baysian model (using the MCMCglm package), to compair the identified importance of variables under a frequentist vs baysian framework. As the exploratory correlation plot showed that many variables displayed high levels of collinearity/multicollinearity, I decided to create a model using principal components from a PCA, to preserve all available variables, while not violating any assumptions of variable collinearity and codependence. Finally, I decided to use an automatic variable selection method (MUMIn), where I included the maximum number of variables possible, within the computational limits of my PC. While I believe that xxx method best models which variables influence ELA and dELA, because xxx, I synthesize the results all three models to judge xxx. 
 
 In this analysis I attempted to justify all modelling structure and variable selection decisions made. As I quite unfamiliar with climatic modelling and glacier dynamics, some of these decisions may be sub-optimal. Yet, these decisions were made to the best of my abilities, without going over the top on background research and overall, my models should have a coherent structure and sufficient workflow documentation. In none of the preliminary readings, did I encountered the temperature or precipitation in a specific month singled out to be of particular importance for glacier ELA. Therefore, I decided to exclude all monthly climatic variables and only focus on the aggregated factors. Along with the provided variables, I also included a new variable called temperature variability, as my preliminary readings highlighted its potential importance (Brun, et. al., 2017) and I was able to compute it with the provided dataset.  
 
@@ -97,7 +100,7 @@ summary(m_lme4)
 
 # R squared
 r.squaredGLMM(m_lme4)
-# The R²(C) is 90.78 %, where the C represents the Conditional R_GLMM² and can be interpreted as a variance explained by the entire model, including both fixed and random effects
+# Here we mainly need to focus on the The R²(C), which is 90.78 %. The C represents the Conditional R_GLMM² and can be interpreted as a variance explained by the entire model, including both fixed and random effects
 
 # check out variable co-lineararity 
 
@@ -111,6 +114,7 @@ qqline(resid(m_lme4))
 
 dwplot(m_lme4) +
    geom_vline(xintercept = 0, colour = "grey60", linetype = 2)
+# In the dot-whiskar visual representation of the effect sizes and standard errors of our the variables we can clearly see that mean elevation and mean annual temperature are the two most influencial variables at predicting ELA. These are then followed by percipitation in non-monsoon phases, aswell as the temperature vairability varable that I aggrigated from mean temperature data. 
 
 
 
@@ -138,21 +142,20 @@ plot(m_lme4_d)
 # the residual vs fitted plot shows a mostly flat and even distribution of points, with some outlying point at intermidiate values
 
 qqnorm(resid(m_lme4_d))
-qqline(resid(m_lme4_d))
+
 # When checking the QQ-plot it is seen that there is slight tail at the upper bound, but overall this is a significant improvement over the gaussian distribution.
 
 
 dwplot(m_lme4_d) +
    geom_vline(xintercept = 0, colour = "grey60", linetype = 2)
-
-
+# In the dot-whiskar visual representation of the effect sizes and standard errors of our the variables we can clearly see that as before (normal ELA) mean annual temperature is an highly influencial variable at predicting ELA. This is followed by followed by the previouly identified varaible of percipitation in non-monsoon phases, aswell as the new debris cover variable. 
 ```
 
 
-Bayesian Models
+#### Bayesian Models
 
 
-The default prior values assumed in a MCMCglmm are posterior distribution with very large variance values for the fixed effects and a flat (weakly informative) prior. The variances for the random effects are assumed to have inverse-Wishart priors with a very low value for nu (weakly informative). I decided to not dealve deeper into assigning my own priors, due to me having i) little prior knowlege the dyamics / expected values and distributions of variables and ii) a shallow knowelge of the mathimatical underpinnings and practical inplimentation methods for assigning more informative priors
+The default prior values assumed in a MCMCglmm are posterior distribution with very large variance values for the fixed effects and a flat (weakly informative) prior. The variances for the random effects are assumed to have inverse-Wishart priors with a very low value for nu (weakly informative). I decided to not dealve deeper into assigning my own priors, due to me having i) little prior knowlege the dyamics / expected values and distributions of variables and ii) relatively shallow knowelge of the mathimatical underpinnings and practical inplimentation methods for assigning more informative priors
 
 
 
@@ -370,6 +373,8 @@ dwplot(top_model_d) +
 
 AICc_df <- AICc(m_lme4, m_lme4_d, m_bays, m_bays_d, m_pca, m_pca_d, top_model, top_model_d) %>% 
   arrange(AICc)
+
+AICc_df
 
 # Based on a compaired ranking between the modeles contructed under my three approaches, it is seen that automated variable selection performed best for the current ELA, while the lme4 had the lowrst AICc for dELA. 
 
