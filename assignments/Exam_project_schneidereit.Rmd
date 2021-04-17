@@ -68,15 +68,13 @@ glacier_scaled <- glacier %>%
 
 
 
-#ggplot(data=glacier, aes_string(x = id, y = "")) + geom_line()
 
-colnames(glacier) 
+# Here is the for a exploratory correlation plot I used to visually assess my variables to determine what to potentially include in my models, and to identify where strong variable co-dependency existed. I commmented out the code as the plot is quite busy and to not detract from the flow of the rest of my analysis. 
 
 #(corr_plot <- ggpairs(data = glacier, columns = c(2:9,22:25,38:39,52:53,66:74)))
-#corplot?
 #corrplot.mixed(cor1[,2:9,22:25,38:39,52:53,66:74], lower.col = "black" , number.cex = .7)
 
-# Here a number of strong correlations between variables can be seen. Notabale is this Summit and Max elevation seem to be the same variable and that xxxx
+# Here a number of strong correlations between variables can be seen. Notabale is this Summit and Max elevation seem to be the same variable and that particuly temperature and preciption variables correlation with each other. 
 
 
 
@@ -88,6 +86,12 @@ colnames(glacier)
 ### Mixed effects model with random effects
 
 In this first section, I chose to create a Mixed effects model with random effects (lme4 package), where all variables where chosen based on a priori knowledge gained from the readings and the exploratory correlation plot. The methodological advantage of this approach is that through including the random effects, correlations between data coming from specific morphology types and geographical orientations can be accounted for, by treating them as a grouping factor. While this prevents us from explicitly assessing the impacts of morphology and geographic orientation, it still allows us to see how they influence the observed patterns in other variables. In the final section of this analysis (the automated variable selection) morphology and geographic orientation are left as fixed effects, so that I have them once as a fixed and once as a random effect, to allow for comparison between the two scenarios. As the Distribution of ELA had a slight negative skew, I also tried running a GLM with a inverse gaussian distribution (link = "1/mu^2"), but encountered the error that the "PIRLS step-halvings failed to reduce deviance in pwrssUpdate", to which I did not find a solution. 
+
+
+to adjust estimates for repeat sampling. When more than one observation arises from the same individual, location, or time, then traditional, single-level models may mislead us.
+(2) Toadjustestimatesforimbalanceinsampling.Whensomeindividuals,locations,or times are sampled more than others, we may also be misled by single-level models.
+(3) To study variation. If our research questions include variation among individuals or other groups within the data, then multilevel models are a big help, because they model variation explicitly.
+(4) To avoid averaging. Pre-averaging data to construct variables can be dangerous. Averaging removes variation, manufacturing false confidence. Multilevel models preserve the uncertainty in the original, pre-averaged values, while still using the average to make predictions
 
 ```{r}
 
@@ -110,7 +114,7 @@ plot(m_lme4)
 
 qqnorm(resid(m_lme4))
 qqline(resid(m_lme4))
-# When checking the QQ-plot it is seen that there is a left tail at lower bonds and a right tail at the upper bonds. Following an ad hoc transformation of the dependent variable ELA, this observed trend only showed a very marginal improvement, so I decided to keep ELA in its un-transformed state.  
+# When checking the QQ-plot it is seen that there is a left tail at lower bonds and a right tail at the upper bonds. Ideal would be to use a distribution that better fits the data (such as a inverse gaussian distribution), which unfortunatly was not possible. Following an ad hoc transformation of the dependent variable ELA, this observed trend only showed a very marginal improvement, so I decided to keep ELA in its un-transformed state.  
 
 
 # random effects
@@ -172,7 +176,10 @@ ggcoefstats(x = m_lme4_d, conf.int = TRUE,
 ## Bayesian Models
 
 
-The default prior values assumed in a MCMCglmm are posterior distribution with very large variance values for the fixed effects and a flat (weakly informative) prior. The variances for the random effects are assumed to have inverse-Wishart priors with a very low value for nu (weakly informative). I decided to not delve deeper into assigning my own priors, due to me having i) little prior knowlege the dyamics / expected values and distributions of variables and ii) relatively shallow knowledge of the mathematical underpinnings and practical implementation methods for assigning more informative priors
+MCMCglmm is an altnerative modeling package to Rstan (brms), that I selected to use as I am more farmily with its pratical implementation and as I have been unable to install stan sucessfully in the past. Both packages use a Baysian statistical framework in combition with Markov chain Monte Carlo simulaitons.  The default prior values assumed in a MCMCglmm are posterior distribution with very large variance values for the fixed effects and a flat (weakly informative) prior. The variances for the random effects are assumed to have inverse-Wishart priors with a very low value for nu (weakly informative). I decided to not delve deeper into assigning my own priors, due to me having i) little prior knowlege the dyamics / expected values and distributions of variables and ii) relatively shallow knowledge of the mathematical underpinnings and practical implementation methods for assigning more informative priors.
+
+????????????????????????????????
+The most popular [alternative to grid approximation and the quadratic approximation] is Markov chain Monte Carlo (MCMC), which is a family of conditioning engines capable of handling highly complex models. It is fair to say that MCMC is largely responsible for the insurgence of Bayesian data analysis that began in the 1990s. While MCMC is older than the 1990s, affordable computer power is not, so we must also thank the engineers. Much later in the book (Chapter 9), you’ll meet simple and precise examples of MCMC model fitting, aimed at helping you understand the technique. (p. 45, emphasis in the original)
 
 
 
@@ -183,7 +190,7 @@ m_bays <- MCMCglmm(ELA ~ debris_cov + length + area + P_snow + P_monsoon + P_not
 # The model runs and converges after the default 13000 iterations
 
 summary(m_bays)
-# As before in the hierarchical GLM, it is seen that both morphology and orientation influence ELA, and that morphology is the more significant predictor (posf)
+# As before in the hierarchical GLM, it is seen that both morphology and orientation accpunt for some variance in ELA. From the postierer mean (visualization in following code chunck), we can see that that like in the hierarchical GLM, mean annual temperature is the strongest predictor of ELA (as its postierier mean in centured farthest from zero). Additionally mean elevation, debris cover, and precipitaion during non monsoon periods are also seen to be influential variables. A more detailed description can be found at the end of the section in the dot whiskar plot. 
 
 # R squared
 #r.squaredGLMM(m_bays)
@@ -420,13 +427,33 @@ ggcoefstats(x = top_model_d, conf.int = TRUE,
 AICc_df <- AICc(m_lme4, m_lme4_d, m_bays, m_bays_d, m_pca, m_pca_d, top_model, top_model_d) %>% 
   arrange(AICc)
 
-BICc_df <- BIC(m_lme4, m_lme4_d, m_bays, m_bays_d, m_pca, m_pca_d, top_model, top_model_d) %>% 
+BIC_ELA <- BIC(m_lme4, m_bays, m_pca, top_model) %>% 
+  arrange(BIC)
+
+BIC_dELA <- BIC(m_lme4_d, m_bays_d, m_pca_d, top_model_d) %>% 
   arrange(BIC)
 
 AICc_df
 
-# Based on a compaired ranking between the modeles contructed under my three approaches, it is seen that automated variable selection performed best for the current ELA, while the lme4 had the lowrst AICc for dELA. 
+# For the between model comparison, I decided to use the Bayesian Information Criterion (BIC), as opposed to the Akaike's information criterion (c). Using the BIC comes with a number of advantages such as assessing parsimony of different model types and model structures more consistently, and being more tolerant of models with slight under-fitting (likely to be the case in some of my models, as residual deviation was sometimes large at low and high end of the distribution). Furthermore BIC is more selective for the total number of variables included in the model and has a stronger negative weight associated to number of parameters. Applying greater penalization to models with many variables seems like a reasonable approach for this analysis, as all models had large sets of included variables, increasing the risk of over-fitting. A final argument for using BIC is that this has the potential to reduce the arbitrary methodological advantage of the automated variable selection methods, As the automated band selection methods optimize for AIC. using BIC as the final assessment criterion allows for a slightly fairer comparison between the models. As there is a slight differentiation between AIC and BIC, this  means that the automated selection models are not fully optimized for the assessment criterion. 
 
-#Lower indicates a more parsimonious model
+# Based on a compared BIC ranking between the models constructed under my four modeling approaches, it is seen that automated variable selection performed best for  predicting both the current ELA, as well as dELA. While I choice BIC as the final assessment criterion, it still unsurprising that the automated band selection methods performed the best, as they where optimized to have low parsimony. Despite the automated varaibale selection method practically being the "best" model, in terms of my personal confidence in the found results and overall reproduceability, I would favor the Bayesian model. The Baysian models yielded an acceptably low BIC values for both ELA and dELA (unlike the hierarchical GLM), and comes with the conceptual advantage of having its variables selected based on a priori knowledge/guesses of what makes mechanistic sense to include. 
+
+# Regardless of what modeling approach is preferred, synthesizing the results of all my models helps provide more robust answers to the main research questions. 
+
+# 1.	Which are the most important topographical and climatological drivers of glacier equilibrium line altitude (ELA)?
+
+# lme4 mean elevation and mean temp; followed by precipitation in non-monsoon phases, as well as the temperature variability variable that I aggregated from mean temperature data.
+
+# bayes the mean elevation and mean annual temperature are highly influential variables at predicting ELA. This is followed by followed by the also previously identified variables of temperature variability and precipitation in non-monsoon phases. The correspondence between the hierarchical GLM and Bayesian model in terms of the magnitude of how variables influence ELA makes intuitive sense, as largely the models largely share the same hierarchical structure and only slightly deviate in how effect sizes and standard errors are calculated. The lack of major differences between the two models is also accentuated by the fact the only weak (non-informative) priors were selected for the Bayesian model.
+
+
+
+# 2.	Can we explain ELA changes since the Little Ice Age with topographical and climatological variables?
+
+# lme4 The most important fixed effects where mean temperature and debris cover; mean annual temperature is an highly influential variable at predicting ELA. This is followed by followed by the previously identified variable of precipitation in non-monsoon phases, as well as the new debris cover variable. 
+
+
+
 ```
 
