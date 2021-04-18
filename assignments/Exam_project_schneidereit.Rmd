@@ -1,7 +1,7 @@
 ---
-title: "Asignment Week 1"
+title: "QM MAP: Glacier Sensitivity"
 author: "Shawn Schneidereit"
-date: "2.11.2020"
+date: "18.4.2021"
 output: html_document
 ---
 
@@ -26,18 +26,16 @@ library(sjPlot)
 
 # Constraining the effects of topography and climate on climate change sensitivity of glaciers in Tibet
 
-The Tibetan Plateau region is home to the greatest amount of non-polar glaciers, which are also highly sensitive to climate change and has recently been experiencing the greatest rates of mass losses. These glaciers are primary freshwater sources to major rivers across Asia, with increased rates of melting increasing the risks of floods and other geo-hazards to some of the world’s most densely populated regions. Yet the geophysical and atmospheric conditions driving changes in Tibetan plateau glacier mass balance remain relatively understudied, with uncertainties in which variables can best predict glacier mass change. In this analysis I will use three different modeling approaches to assess which topographical and climatological drives are most important in explaining changes in glacier equilibrium line altitude (ELA) and whether these drives can be used to explain glacier ELA changes since the little ice age. The first approach uses a Mixed effects model with random effects, where all variables where chosen based on a priori knowledge gained from the readings and an exploratory correlation plot. Following this I constructed an identically structured hierarchical Bayesian model (using the MCMCglm package), to compare the identified importance of variables under a frequentest vs baysian framework. As the exploratory correlation plot showed that many variables displayed high levels of collinearity/multicollinearity, I decided to create a model using principal components from a PCA, to preserve all available variables, while not violating any assumptions of variable collinearity and co-dependence. Finally, I decided to use an automatic variable selection method (MUMIn), where I included the maximum number of variables possible, within the computational limits of my PC. While I believe that xxx method best models which variables influence ELA and dELA, because xxx, I synthesize the results all three models to judge xxx. 
+The Tibetan Plateau region is home to the greatest amount of non-polar glaciers, which are also highly sensitive to climate change and has recently been experiencing the greatest rates of mass losses. These glaciers are primary freshwater sources to major rivers across Asia, with increased rates of melting increasing the risks of floods and other geo-hazards to some of the world’s most densely populated regions. Yet the geophysical and atmospheric conditions driving changes in Tibetan plateau glacier mass balance remain relatively understudied, with uncertainties in which variables can best predict glacier mass change. In this analysis I will use four different modeling approaches to assess which topographical and climatological drives are most important in explaining changes in glacier equilibrium line altitude (ELA) and whether these drives can be used to explain glacier ELA changes since the little ice age. The first approach uses a Mixed effects model with random effects, where all variables where chosen based on a priori knowledge gained from the readings and an exploratory correlation plot. Following this I constructed an identically structured hierarchical Bayesian model (using the MCMCglm package), to compare the identified importance of variables under a frequentest vs baysian framework. As the exploratory correlation plot showed that many variables displayed high levels of collinearity/multicollinearity, I decided to create a model using principal components from a PCA, to preserve all available variables, while not violating any assumptions of variable collinearity and co-dependence. Finally, I decided to use an automatic variable selection method (MUMIn), where I included the maximum number of variables possible, within the computational limits of my PC. While I believe that the Baysian modeling approaches are best suited to identifying which variables influence ELA and dELA, due to their combination of using pre defined variables chosen based on mechanistic processes and their relatively low BIC values when cross compared. In conclusion I  synthesize the results all four models to judge which varibales are most important for predicitng ELA and if ELA shifts since the little ice age can be predicted using topographical and climatological variables. 
 
 In this analysis I attempted to justify all modeling structure and variable selection decisions made. As I quite unfamiliar with climatic modeling and glacier dynamics, some of these decisions may be sub-optimal. Yet, these decisions were made to the best of my abilities, without going over the top on background research and overall, my models should have a coherent structure and sufficient work-flow documentation. In none of the preliminary readings, did I encountered the temperature or precipitation in a specific month singled out to be of particular importance for glacier ELA. Therefore, I decided to exclude all monthly climatic variables and only focus on the aggregated factors. Along with the provided variables, I also included a new variable called temperature variability, as my preliminary readings highlighted its potential importance (Brun, et. al., 2017) and I was able to compute it with the provided dataset. While I include p-values throughout my analysis, in this report I interpret variable significance as having a relatively large effect, with a standard error small enough that when ± to the effect size, do not make it cross 0 (the implication being that the effect size is large enough to have a measurable influence, even when considering the uncertainty around the estimate). 
 
- 
-Multiple sources confirm that overall there is a lack of knowledge on climatic data and their influence on the TP, due to a lack of Permanente meteorological weather stations in the TP, with the influence of Monsoon being aknoweleged (Maussion et. al., 2014).
 
 ### 1.Data import and wrangeling
 
 
 ```{r}
-glacier <- read_csv("~/Documents/humbolt/quantitative_methods/assignments/glacier_sensitivity.csv") %>%
+glacier <- read_csv("~/Documents/humbolt/semester_01/quantitative_methods/assignments/glacier_sensitivity.csv") %>%
   na.exclude 
 
 glacier_scaled <- glacier %>% 
@@ -69,12 +67,12 @@ glacier_scaled <- glacier %>%
 
 
 
-# Here is the for a exploratory correlation plot I used to visually assess my variables to determine what to potentially include in my models, and to identify where strong variable co-dependency existed. I commmented out the code as the plot is quite busy and to not detract from the flow of the rest of my analysis. 
+# Here is the for a exploratory correlation plot I used to visually assess my variables to determine what to potentially include in my models, and to identify where strong variable co-dependency existed. I commented out the code as the plot is quite busy and to not detract from the flow of the rest of my analysis. 
 
 #(corr_plot <- ggpairs(data = glacier, columns = c(2:9,22:25,38:39,52:53,66:74)))
 #corrplot.mixed(cor1[,2:9,22:25,38:39,52:53,66:74], lower.col = "black" , number.cex = .7)
 
-# Here a number of strong correlations between variables can be seen. Notabale is this Summit and Max elevation seem to be the same variable and that particuly temperature and preciption variables correlation with each other. 
+# Here a number of strong correlations between variables can be seen. Notable is this Summit and Max elevation seem to be the same variable and that particular temperature and precipitation variables correlation with each other. 
 
 
 
@@ -88,57 +86,67 @@ glacier_scaled <- glacier %>%
 In this first section, I chose to create a Mixed effects model with random effects (lme4 package), where all variables where chosen based on a priori knowledge gained from the readings and the exploratory correlation plot. The methodological advantage of this approach is that through including the random effects, correlations between data coming from specific morphology types and geographical orientations can be accounted for, by treating them as a grouping factor. While this prevents us from explicitly assessing the impacts of morphology and geographic orientation, it still allows us to see how they influence the observed patterns in other variables. In the final section of this analysis (the automated variable selection) morphology and geographic orientation are left as fixed effects, so that I have them once as a fixed and once as a random effect, to allow for comparison between the two scenarios. As the Distribution of ELA had a slight negative skew, I also tried running a GLM with a inverse gaussian distribution (link = "1/mu^2"), but encountered the error that the "PIRLS step-halvings failed to reduce deviance in pwrssUpdate", to which I did not find a solution. 
 
 
-to adjust estimates for repeat sampling. When more than one observation arises from the same individual, location, or time, then traditional, single-level models may mislead us.
-(2) Toadjustestimatesforimbalanceinsampling.Whensomeindividuals,locations,or times are sampled more than others, we may also be misled by single-level models.
-(3) To study variation. If our research questions include variation among individuals or other groups within the data, then multilevel models are a big help, because they model variation explicitly.
-(4) To avoid averaging. Pre-averaging data to construct variables can be dangerous. Averaging removes variation, manufacturing false confidence. Multilevel models preserve the uncertainty in the original, pre-averaged values, while still using the average to make predictions
-
 ```{r}
-
 hist(glacier_scaled$ELA) # there is a negative skew to the data, but overall a gaussian distibution looks appropriate
 
 m_lme4 <- lmer(ELA ~ debris_cov + length + area + P_snow + P_monsoon + P_not_monsoon +  T_mean_mea.yr +  T_variability +                      Slope_mean + Elev_max + Elev_mean + (1|morph_type) + (1|orientation), 
                data = glacier_scaled) 
 summary(m_lme4)
-#The most important fixed effects where mean elevation and mean temperature. A more detailed description and visualzation can be found in the dot and whiskar plot at the end of this section. 
-
-# R squared
-r.squaredGLMM(m_lme4)
-# Here we mainly need to focus on the The R²(C), which is 90.78 %. The C represents the Conditional R_GLMM² and can be interpreted as a variance explained by the entire model, including both fixed and random effects
-
-
-# checking out variable co-linearity 
-plot(m_lme4)
-# the residual vs fitted plot shows a mostly flat and even distribution of points, with greater diviances seen at the lower spectrum of points, likely due to the negative skew described above
-
-
-qqnorm(resid(m_lme4))
-qqline(resid(m_lme4))
-# When checking the QQ-plot it is seen that there is a left tail at lower bonds and a right tail at the upper bonds. Ideal would be to use a distribution that better fits the data (such as a inverse gaussian distribution), which unfortunatly was not possible. Following an ad hoc transformation of the dependent variable ELA, this observed trend only showed a very marginal improvement, so I decided to keep ELA in its un-transformed state.  
-
-
-# random effects
-plot_model(m_lme4, type = "re", show.values = TRUE, vline.color = "black")
-# In the summary it can be seen that overall both random effects orientation and morphology type account for relatively large amounts of variation, with Morphology being the stronger predictor (variance 468,9; std dev. 21.65), vs orientation (variance 129.2, std dev. 11.37). Yet in the visualization of the random effect we can see that that for neither orientation or morphology, is are any individual groups with a large outlying effect, as all effect sizes ± standard errors either are very close or cross 0. 
-
-ggcoefstats(x = m_lme4, conf.int = TRUE,
-  conf.level = 0.95, conf.method = "HPDinterval", exclude.intercept = T, stats.labels =F) 
-# In the dot-whisker visual representation of the effect sizes and standard errors of our the variables we can clearly see that mean elevation and mean annual temperature are the two most influential variables at predicting ELA. These are then followed by precipitation in non-monsoon phases, as well as the temperature variability variable that I aggregated from mean temperature data. 
-
-
-
-
-
 ```
 
+The most important fixed effects where mean elevation and mean temperature. A more detailed description and visualization can be found in the dot and whiskar plot at the end of this section. Some variables such a snow and precipitation in non monsoon phases, as well as mean annual temperature and temperature variability snowed some correlation, but as I assess these to have different mechanistic reasons to be included, I decided to not alter my model structure. 
+
+```{r}
+# R squared
+r.squaredGLMM(m_lme4)
+```
+
+
+Here we mainly need to focus on the The R²(C), which is 90.78 %. The C represents the Conditional R_GLMM² and can be interpreted as a variance explained by the entire model, including both fixed and random effects
+
+
+```{r}
+# checking out variable co-linearity 
+plot(m_lme4)
+```
+The residual vs fitted plot shows a mostly flat and even distribution of points, with greater distances seen at the lower spectrum of points, likely due to the negative skew described above
+
+
+```{r}
+qqnorm(resid(m_lme4))
+qqline(resid(m_lme4))
+```
+
+When checking the QQ-plot it is seen that there is a left tail at lower bonds and a right tail at the upper bonds. Ideal would be to use a distribution that better fits the data (such as a inverse gussian distribution), which unfortunately was not possible. Following an ad hoc transformation of the dependent variable ELA, this observed trend only showed a very marginal improvement, so I decided to keep ELA in its un-transformed state.  
+
+```{r}
+# random effects
+plot_model(m_lme4, type = "re", show.values = TRUE, vline.color = "black")
+```
+
+ In the summary it can be seen that overall both random effects orientation and morphology type account for relatively large amounts of variation, with Morphology being the stronger predictor (variance 468,9; std dev. 21.65), vs orientation (variance 129.2, std dev. 11.37). Yet in the visualization of the random effect we can see that that for neither orientation or morphology, is are any individual groups with a large outlying effect, as all effect sizes ± standard errors either are very close or cross 0. 
+ 
+```{r}
+ggcoefstats(x = m_lme4, conf.int = TRUE,
+  conf.level = 0.95, conf.method = "HPDinterval", exclude.intercept = T, stats.labels =F) 
+```
+  
+In the dot-whisker visual representation of the effect sizes and standard errors of our the variables we can clearly see that mean elevation and mean annual temperature are the two most influential variables at predicting ELA. These are then followed by precipitation in non-monsoon phases, as well as the temperature variability variable that I aggregated from mean temperature data. 
+
+
+
 ## Mixed effects model with random effects dELA
+
 
 ```{r}
 
 hist(glacier_scaled$dELA)
-# there is a stronger skew to the data. While again an inverse Gaussian distribution seems appropriate, this was also not possible. Instead I compared a the model with a normal Gaussian and a Poisson distribution and found that the Poisson had a better distribution of residuals.
 
+```
 
+There is a stronger skew to the data. While again an inverse Gaussian distribution seems appropriate, this was also not possible. Instead I compared a the model with a normal Gaussian and a Poisson distribution and found that the Poisson had a better distribution of residuals.
+
+```{r}
 m_lme4 <-lmer(ELA ~ debris_cov + length + area + P_snow + P_monsoon + P_not_monsoon +  T_mean_mea.yr +  T_variability +                      Slope_mean + Elev_max + Elev_mean + (1 | morph_type) + (1 | orientation),
     data = glacier_scaled)
 
@@ -146,136 +154,177 @@ m_lme4_d <-glmer(dELA ~ debris_cov + length + area + P_snow + P_monsoon + P_not_
     family = poisson,
     data = glacier_scaled)
 summary(m_lme4_d)
-# In the summary it can be seen that neither random effects orientation and morphology type have significant influence on ELA, with Morphology as both have relatively small effect sizes with standard errors that make the estimate cross 0. The most important fixed effects where mean temperature and debris cover. A more detailed description and visualization can be found in the dot and whisker plot at the end of this section. 
+```
 
+ In the summary it can be seen that neither random effects orientation and morphology type have significant influence on ELA, with Morphology as both have relatively small effect sizes with standard errors that make the estimate cross 0. The most important fixed effects where mean temperature and debris cover. A more detailed description and visualization can be found in the dot and whisker plot at the end of this section. Some variables such a snow and precipitation in non monsoon phases, as well as mean annual temperature and temperature variability snowed some correlation, but as I assess these to have different mechanistic reasons to be included, I decided to not alter my model structure. 
+
+```{r}
 # R squared (conditional)
 r.squaredGLMM(m_lme4_d)
-# The R²(C) is 98.65 %, where the C represents the Conditional R_GLMM² and can be interpreted as a variance explained by the entire model, including both fixed and random effects
+```
+
+The R²(C) is 98.65 %, where the C represents the Conditional R_GLMM² and can be interpreted as a variance explained by the entire model, including both fixed and random effects
 
 
+
+```{r}
 # checking out variable co-linearity 
 plot(m_lme4_d)
-# the residual vs fitted plot shows a mostly flat and even distribution of points, with some outlying point at intermediate values
+```
 
+The residual vs fitted plot shows a mostly flat and even distribution of points, with some outlying point at intermediate values
+
+```{r}
 qqnorm(resid(m_lme4_d))
+```
 
-# When checking the QQ-plot it is seen that there is slight tail at the upper bound, but overall this is a significant improvement over the Gaussian distribution.
+When checking the QQ-plot it is seen that there is slight tail at the upper bound, but overall this is a significant improvement over the Gaussian distribution.
 
-
+```{r}
 # random effects 
 plot_model(m_lme4_d, type = "re", show.values = TRUE, vline.color = "black")
-# In the summary it can be seen that both random effects orientation and mophology type relatively account for a small amount of overall variation, with Morphology being the stronger predictor (variance 0.68; std dev. 0.82), vs orientation (variance 0.012, std dev. 0.11). Note that here the random effects are not centured around 0 but 1, as I used a possion distribution for this model. In the visualization  of the random effect we can see that that for  orientation  there  are no groups with a large outlying effect, as all effect sizes ± standard errors either are very close or cross 0. On the other hand, for morphology type we can see that class 6 has a uncharaterisitcally strong negative influence on dELA, indicating that it may be a driver of glacier loss. 
+```
 
+In the summary it can be seen that both random effects orientation and morphology type relatively account for a small amount of overall variation, with Morphology being the stronger predictor (variance 0.68; std dev. 0.82), vs orientation (variance 0.012, std dev. 0.11). Note that here the random effects are not centered around 0 but 1, as I used a Possion distribution for this model. In the visualization  of the random effect we can see that that for  orientation  there  are no groups with a large outlying effect, as all effect sizes ± standard errors either are very close or cross 0. On the other hand, for morphology type we can see that class 6 has a uncharacteristically strong negative influence on dELA, indicating that it may be a driver of glacier loss. 
+
+```{r}
 # Variable effect size visualization
 ggcoefstats(x = m_lme4_d, conf.int = TRUE,
   conf.level = 0.95, conf.method = "HPDinterval", exclude.intercept = T, stats.labels =F) 
-# In the dot-whiskar visual representation of the effect sizes and standard errors of our the variables we can clearly see that as before (normal ELA) mean annual temperature is an highly influential variable at predicting ELA. This is followed by followed by the previously identified variable of precipitation in non-monsoon phases, as well as the new debris cover variable. 
 ```
+
+In the dot-whiskar visual representation of the effect sizes and standard errors of our the variables we can clearly see that as before (normal ELA) mean annual temperature is an highly influential variable at predicting ELA. This is followed by followed by the previously identified variable of precipitation in non-monsoon phases, as well as the new debris cover variable and mean elevation. 
 
 
 ## Bayesian Models
 
 
-MCMCglmm is an altnerative modeling package to Rstan (brms), that I selected to use as I am more farmily with its pratical implementation and as I have been unable to install stan sucessfully in the past. Both packages use a Baysian statistical framework in combition with Markov chain Monte Carlo simulaitons.  The default prior values assumed in a MCMCglmm are posterior distribution with very large variance values for the fixed effects and a flat (weakly informative) prior. The variances for the random effects are assumed to have inverse-Wishart priors with a very low value for nu (weakly informative). I decided to not delve deeper into assigning my own priors, due to me having i) little prior knowlege the dyamics / expected values and distributions of variables and ii) relatively shallow knowledge of the mathematical underpinnings and practical implementation methods for assigning more informative priors.
-
-????????????????????????????????
-The most popular [alternative to grid approximation and the quadratic approximation] is Markov chain Monte Carlo (MCMC), which is a family of conditioning engines capable of handling highly complex models. It is fair to say that MCMC is largely responsible for the insurgence of Bayesian data analysis that began in the 1990s. While MCMC is older than the 1990s, affordable computer power is not, so we must also thank the engineers. Much later in the book (Chapter 9), you’ll meet simple and precise examples of MCMC model fitting, aimed at helping you understand the technique. (p. 45, emphasis in the original)
-
+MCMCglmm is an altnerative modeling package to Rstan (brms), that I selected to use as I am more family with its practical implementation and as I have been unable to install stan successfully in the past. Both packages use a Bayesian statistical framework in combination with Markov chain Monte Carlo simulations.  The default prior values assumed in a MCMCglmm are posterior distribution with very large variance values for the fixed effects and a flat (weakly informative) prior. The variances for the random effects are assumed to have inverse-Wishart priors with a very low value for nu (weakly informative). I decided to not delve deeper into assigning my own priors, due to me having i) little prior knowledge the dynamics / expected values and distributions of variables and ii) relatively shallow knowledge of the mathematical underpinnings and practical implementation methods for assigning more informative priors.
 
 
 ```{R}
-
 m_bays <- MCMCglmm(ELA ~ debris_cov + length + area + P_snow + P_monsoon + P_not_monsoon +  T_mean_mea.yr +  T_variability +                      Slope_mean + Elev_max + Elev_mean, random = ~ morph_type + orientation, 
                data = glacier_scaled) 
 # The model runs and converges after the default 13000 iterations
 
 summary(m_bays)
-# As before in the hierarchical GLM, it is seen that both morphology and orientation accpunt for some variance in ELA. From the postierer mean (visualization in following code chunck), we can see that that like in the hierarchical GLM, mean annual temperature is the strongest predictor of ELA (as its postierier mean in centured farthest from zero). Additionally mean elevation, debris cover, and precipitaion during non monsoon periods are also seen to be influential variables. A more detailed description can be found at the end of the section in the dot whiskar plot. 
+```
 
+As before in the hierarchical GLM, it is seen that both morphology and orientation account for some variance in ELA. From the postierier mean (visualization in following code chunk), we can see that that like in the hierarchical GLM, mean elevation and  mean annual temperature are the strongest predictors of ELA (as its postierier mean in centered farthest from zero). The aggregated variable temperature variability was the also a good predictor of ELA.
+
+
+```{r}
 # R squared
 #r.squaredGLMM(m_bays)
-# Unfortunately I was not able to figure out access using the r2 with a predefined function, or an official way to compute it. Therefore For me Bayesian models I do not include r2 values.
+```
 
+Unfortunately I was not able to figure out access using the r2 with a predefined function, or an official way to compute it. Therefore For me Bayesian models I do not include r2 values.
 
+```{r}
 # postirior distribution of random effects
 par(mfrow = c(1,2))
 hist(mcmc(m_bays$VCV)[,"morph_type"])
 hist(mcmc(m_bays$VCV)[,"orientation"])
-# The variance can not be equal to zero, but as the mean value is up against zero, this can be interpreted as the effect not being of great significance (which corresponds with the results of the hierichical linear model). As the spread of the histograms are relatively narrow, it can be assumed that the distribution is relatively accurate.
+```
 
+The variance can not be equal to zero, but as the mean value is up against zero, this can be interpreted as the effect not being of great significance (which corresponds with the results of the hierarchical linear model). As the spread of the histograms are relatively narrow, it can be assumed that the distribution is relatively accurate.
 
+```{r}
 # Assesing model convergence through plotting trace and density est. for the intercept
 plot(m_bays$Sol)
-# The trace can be interpreted as the a pseudo time-series of what the model was doing in each of its iterations. As all traces have the "fuzzy caterpillar" appearance, it can be assumed there is adequate mixing with overall convergence being met. The density plot shows the postierer distribution of each the model predicted for each variable in each iteration. If the distribution crosses zero, the variable can be assumed to be non-significant and the spread of the distribution conveys the overall accuracy of the predicted variable. 
+```
 
+The trace can be interpreted as the a pseudo time-series of what the model was doing in each of its iterations. As all traces have the "fuzzy caterpillar" appearance, it can be assumed there is adequate mixing with overall convergence being met. The density plot shows the postierier distribution of each the model predicted for each variable in each iteration. If the distribution crosses zero, the variable can be assumed to be non-significant and the spread of the distribution conveys the overall accuracy of the predicted variable, as well as the probability of effect size being "true". 
 
+```{r}
 # Variable effect size visualization
 ggcoefstats(x = m_bays, conf.int = TRUE,
-  conf.level = 0.95, conf.method = "HPDinterval", robust = TRUE, exclude.intercept = T) 
-# In the dot-whisker visual representation of the effect sizes and standard errors of our the variables we can clearly see that as before (Hierarchical GLM), the mean elevation and mean annual temperature are highly influential variables at predicting ELA. This is followed by followed by the also previously identified variables of temperature variability and precipitation in non-monsoon phases. The correspondence between the hierarchical GLM and Bayesian model in terms of the magnitude of how variables influence ELA makes intuitive sense, as largely the models largely share the same hierarchical structure and only slightly deviate in how effect sizes and standard errors are calculated. The lack of major differences between the two models is also accentuated by the fact the only weak (non-informative) priors were selected for the Bayesian model.
+  conf.level = 0.95, conf.method = "HPDinterval", robust = TRUE, exclude.intercept = T)
 ```
+
+In the dot-whisker visual representation of the effect sizes and standard errors of our the variables we can clearly see that as before (Hierarchical GLM), the mean elevation and mean annual temperature are highly influential variables at predicting ELA. This is followed by followed by the also previously identified variables of temperature variability and precipitation in non-monsoon phases. The correspondence between the hierarchical GLM and Bayesian model in terms of the magnitude of how variables influence ELA makes intuitive sense, as largely the models largely share the same hierarchical structure and only slightly deviate in how effect sizes and standard errors are calculated. The lack of major differences between the two models is also accentuated by the fact the only weak (non-informative) priors were selected for the Bayesian model.
+
 ## Bayesian dELA
 ```{R, warning = FALSE}
-
 m_bays_d <- MCMCglmm(dELA ~ debris_cov + length + area + P_snow + P_monsoon + P_not_monsoon +  T_mean_mea.yr +  T_variability + Slope_mean + Elev_max + Elev_mean, random = ~ morph_type + orientation, 
                        family = "poisson",
                      data = glacier_scaled) 
 # The model runs and converges after the default 13000 iterations
 
 summary(m_bays_d)
+```
 
+As before in the hierarchical GLM, it is seen that both morphology and orientation account for some variance in ELA. From the postierier mean (visualization in following code chunk), we can see that that like in the hierarchical GLM, mean annual temperature is the strongest predictor of ELA (as its postierier mean in centered farthest from zero). Additionally mean elevation, debris cover, and precipitation during non monsoon periods are also seen to be influential variables. A more detailed description can be found at the end of the section in the dot whiskar plot. 
+
+```{r}
 # R squared
 #r.squaredGLMM(m_bays_d)
-# Unfortunately I was not able to figure out access using the r2 with a predefined function, or an official way to compute it. Therefore For me Bayesian models I do not include r2 values.
+```
 
+Unfortunately I was not able to figure out access using the r2 with a predefined function, or an official way to compute it. Therefore For me Bayesian models I do not include r2 values.
+
+```{r}
 # posterior distribution of random effects
 par(mfrow = c(1,2))
 hist(mcmc(m_bays_d$VCV)[,"morph_type"])
 hist(mcmc(m_bays_d$VCV)[,"orientation"])
-# The variance can not be equal to zero, but as the mean value is up against zero, this can be interpreted as the effect not being of great significance. As the spread of the histograms are relatively narrow, it can be assumed that the distribution is relatively accurate.
+```
 
+The variance can not be equal to zero, but as the mean value is up against zero, this can be interpreted as the effect not being of great significance. As the spread of the histograms are relatively narrow, it can be assumed that the distribution is relatively accurate.
+
+```{r}
 # Assessing model convergence through plotting trace and density est. for the intercept
 plot(m_bays_d$Sol)
-# The trace can be interpreted as the a pseudo time-series of what the model was doing in each of its iterations. As all traces have the fuzzy caterpillar appearance, it can be assumed there is adequate mixing with overall convergence being met. The density plot shows the postierer distribution of each the model predicted for each variable in each iteration. If the distribution crosses zero, the variable can be assumed to be non-significant and the spread of the distribution conveys the overall accuracy of the predicted variable. 
+```
 
+ The trace can be interpreted as the a pseudo time-series of what the model was doing in each of its iterations. As all traces have the fuzzy caterpillar appearance, it can be assumed there is adequate mixing with overall convergence being met. The density plot shows the postierer distribution of each the model predicted for each variable in each iteration. If the distribution crosses zero, the variable can be assumed to be non-significant and the spread of the distribution conveys the overall accuracy of the predicted variable, as well as the probability of effect size being "true". . 
 
-
+```{r}
 # Variable effect size visualization
 ggcoefstats(x = m_bays_d, conf.int = TRUE,
-  conf.level = 0.95, conf.method = "HPDinterval", robust = TRUE, exclude.intercept = T) 
-# In the dot-whisker visual representation of the effect sizes and standard errors of our the variables we can clearly see that as before (Hierarchical GLM), the mean annual temperature and debris cover are highly influential variables at predicting dELA. This is followed by followed by the also previously identified variable of precipitation in non-monsoon phases. The correspondence between the hierarchical GLM and Bayesian model in terms of the magnitude of how variables influence dELA makes intuitive sense, as largely the models largely share the same hierarchical structure and only slightly deviate in how effect sizes and standard errors are calculated. The lack of major differences between the two models is also accentuated by the fact the only weak (non-informative) priors were selected for the Bayesian model.
+  conf.level = 0.95, conf.method = "HPDinterval", robust = TRUE, exclude.intercept = T)
 ```
+
+In the dot-whisker visual representation of the effect sizes and standard errors of our the variables we can clearly see that as before (Hierarchical GLM), the mean annual temperature and debris cover are highly influential variables at predicting dELA. This is followed by followed by the also previously identified variable of precipitation in non-monsoon phases. The correspondence between the hierarchical GLM and Bayesian model in terms of the magnitude of how variables influence dELA makes intuitive sense, as largely the models largely share the same hierarchical structure and only slightly deviate in how effect sizes and standard errors are calculated. The lack of major differences between the two models is also accentuated by the fact the only weak (non-informative) priors were selected for the Bayesian model.
+
+# PCA 
 
 In an exploratory correlation plot I found that many variables displayed high levels of collinearity/multicollinearity. Therefore, I decided to create a model using the principal components from a PCA, which has the advantage of being able to preserve all available variables, while not violating any assumptions of variable collinearity and co-dependence. Using the rotation function to assess how strongly each variable loaded on to the computed PC, I created a characterization of the which variables each PC was analogous to. I selection critireon for the number of PC included in the final model was a visual assessment of the cumulative sum of explained variation, relying on the "elbow-method".
 
-## PCA 
+
 ```{r}
 # pca # need to redo analysis/description of pca plots
-pca <- glacier_scaled[c(4:9,22:25,38:39,52:53,66:75)] %>% 
-  dplyr::select(-orientation) # need to remove as it is a character
+pca <- glacier_scaled %>% 
+  dplyr::select(c(4:9,22:25,38:39,52:53,66:75), -orientation) # need to remove as it is a character
 str(pca)
 
 # plot of pc1 and pc2
-res.pca <- PCA(pca[,c(1:22)], scale.unit = F, ncp = 5, graph = TRUE) # scale unit is false, as variables are already scaled
-# based on this PCA we can initially see that elev mean is closly aligned with PC1 and has a strong negative orientation, while being diametrically opposed to the aggregated temperature and precipitation measures. Geo-physical conditions (aside from elev mean on PC1) tend to be ordinated on PC2 with the stronger factors being glacier area, length, and summit height/max elevation (the same redundant metric...). 
+PCA(pca[,c(1:22)], scale.unit = F, ncp = 5, graph = TRUE) # scale unit is false, as variables are already scaled
+```
 
+Based on this PCA we can initially see that elev mean is closely aligned with PC1 and has a strong negative orientation, while being diametrically opposed to the aggregated temperature and precipitation measures. Geo-physical conditions (aside from elev mean on PC1) tend to be ordinated on PC2 with the stronger factors being glacier area, length, and summit height/max elevation (the same redundant metric...). 
 
+```{r}
 #plot of pc1 and pc3
-res.pca <- PCA(pca[,c(1:22)], scale.unit = F, ncp = 5, graph = TRUE, axes = c(1,3))  #scale unit is false, as variables are already scaled
-# based on this plot of PC1 and PC3, we can see that snow precipitation is the main variable contributing to PC3s explained variation. Furthermore the ordination of variables on PC1 are only slightly altered in comparison to the plot of PC1 and PC2. 
+PCA(pca[,c(1:22)], scale.unit = F, ncp = 5, graph = TRUE, axes = c(1,3))  #scale unit is false, as variables are already scaled
+```
 
+Based on this plot of PC1 and PC3, we can see that snow precipitation is the main variable contributing to PC3s explained variation. Furthermore the ordination of variables on PC1 are only slightly altered in comparison to the plot of PC1 and PC2.
 
+```{r}
 pca <- prcomp(pca, scale. = T)
 summary(pca)
 pca$rotation[,1:6]
-# based on this rotation, I will make the following assumption for which variables are analogs to each PC
-# PC1: All temperature variables (both monsoon & non-monsoon), temperature variability, and elevation mean
-# PC2: Geophysical conditions such as min/max elevation, debris cover, catchment length and area, and max slope
-# PC3: All precipitation variables 
-# PC4: Slope, and to a far lesser degree catchment area, length and elevation
-# PC5: Morphology type 
+```
 
+Based on this rotation, I will make the following assumption for which variables are analogs to each PC
+**PC1:** All temperature variables (both monsoon & non-monsoon), temperature variability, and elevation mean
+**PC2:** Geophysical conditions such as min/max elevation, debris cover, catchment length and area, and max slope
+**PC3:** All precipitation variables 
+**PC4:** Slope, and to a far lesser degree catchment area, length and elevation
+**PC5:** Morphology type 
 
+```{r}
 var_exp <- data.frame(pc = c(1:23),
                       var_exp = pca$sdev^2 / sum(pca$sdev^2))
 
@@ -287,9 +336,11 @@ ggplot(var_exp) +
   geom_bar(aes(x = pc, y = var_exp), stat = "identity") +
   geom_line(aes(x = pc, y = var_exp_cumsum)) +
   theme_classic()
+```
 
-# Following the Elbow method, it seems like 3-5 PCs seems like an appropriate cutoff point. Despite being more difficult to interpret the final results, I decided to include 5 PCs, due to PCs 4 and 5 increasing the overall variance explained from ~80% to 90%. This also helps to ensure that the large number of variables in the model are captured in the PCs, especially as morphology type almost exclusively loads on PC5.
+Following the Elbow method, it seems like 3-5 PCs seems like an appropriate cutoff point. Despite being more difficult to interpret the final results, I decided to include 5 PCs, due to PCs 4 and 5 increasing the overall variance explained from ~80% to 90%. This also helps to ensure that the large number of variables in the model are captured in the PCs, especially as morphology type almost exclusively loads on PC5.
 
+```{r}
 # scores
 pca_scores <- data.frame(pca$x)
 head(pca_scores)
@@ -299,54 +350,69 @@ pca_scores_df <- cbind(glacier_scaled, pca_scores)
 
 m_pca <- glm(ELA ~ PC1 + PC2 + PC3 + PC4 + PC5, data = pca_scores_df)
 summary(m_pca)
-# Here we see that PCs 1,2, and 4 have the strongest effect size and large predictive power for ELA. Based on the characterization of which variables are represented by each PC, this means that temperature, geophysical conditions, and slope (and to a smaller extend catchment length, area, and elevation) are the most important variables. Out of the three PCs, PC1 (temperature variables), are by far the most important with a effect size of -65.17 (Std. error 0.88). PCs 2 (geophysical conditions) and 4 (slope) have effect sizes of 17.78 (Std. error 1.35) and -24.04 (Std. error 2.27) respectively. 
+```
 
+Here we see that PCs 1,2, and 4 have the strongest effect size and large predictive power for ELA. Based on the characterization of which variables are represented by each PC, this means that temperature, geophysical conditions, and slope (and to a smaller extend catchment length, area, and elevation) are the most important variables. Out of the three PCs, PC1 (temperature variables), are by far the most important with a effect size of -65.17 (Std. error 0.88). PCs 2 (geophysical conditions) and 4 (slope) have effect sizes of 17.78 (Std. error 1.35) and -24.04 (Std. error 2.27) respectively. 
+
+```{r}
 # R squared
 r.squaredGLMM(m_pca)
 # The R² is 87.12 %
+```
 
+
+```{r}
 plot(m_pca)
-# the residual vs fitted plot shows a mostly flat and even distribution of points, with some outlying point at intermediate values. The QQ-plot has skewed tails at both the lower and upper bounds and is substantial for larger values
+```
+
+The residual vs fitted plot shows a mostly flat and even distribution of points, with some outlying point at intermediate values. The QQ-plot has skewed tails at both the lower and upper bounds and is substantial for larger values
 
 
+```{r}
 # Variable effect size visualization
 ggcoefstats(x = m_pca, conf.int = TRUE,
-  conf.level = 0.95, conf.method = "HPDinterval", exclude.intercept = T, stats.labels =F) 
-# In the dot-whisker visual representation of the effect sizes and standard errors of our the variables we can clearly see that PCs 1,2, and 4 have the strongest effect size and large predictive power for ELA. Based on the characterization of which variables are represented by each PC, this means that temperature, geophysical conditions, and slope (and to a smaller extend catchment length, area, and elevation) are the most important variables.
-
+  conf.level = 0.95, conf.method = "HPDinterval", exclude.intercept = T, stats.labels =F)
 ```
+
+In the dot-whisker visual representation of the effect sizes and standard errors of our the variables we can clearly see that PCs 1,2, and 4 have the strongest effect size and large predictive power for ELA. Based on the characterization of which variables are represented by each PC, this means that temperature, geophysical conditions, and slope (and to a smaller extend catchment length, area, and elevation) are the most important variables.
 
 ## PCA dELA model 
 
 ```{r}
 m_pca_d <- glm(dELA ~ PC1 + PC2 + PC3 + PC4 + PC5,  family = poisson, data = pca_scores_df)
 summary(m_pca_d)
-# Here we see that PCs 4 and 5 have the strongest effect size and large predictive power for dELA. Based on the characterization of which variables are represented by each PC, this means that slope (and to a smaller extend catchment length, area, and elevation), as well as morphological conditions are the most important variables for predicting dELA. Out of the two PCs, PC4 (slope+), is slightly more important with a effect size of -0.095 (Std. error 0.003). PCs 5 (morphology)  has an effect size of 0.039 (Std. error 0.0032).
+```
 
+Here we see that PCs 4 and 5 have the strongest effect size and large predictive power for dELA. Based on the characterization of which variables are represented by each PC, this means that slope (and to a smaller extend catchment length, area, and elevation), as well as morphological conditions are the most important variables for predicting dELA. Out of the two PCs, PC4 (slope+), is slightly more important with a effect size of -0.095 (Std. error 0.003). PCs 5 (morphology)  has an effect size of 0.039 (Std. error 0.0032).
 
+```{r}
 # R squared
 r.squaredGLMM(m_pca_d)
 # The R² is 76.44 %
+```
 
+
+```{r}
 plot(m_pca_d)
-# the residual vs fitted plot shows a mostly flat and even distribution of points, with some outlying point at intermediate values
+```
 
+The residual vs fitted plot shows a mostly flat and even distribution of points, with some outlying point at intermediate values
 
+```{r}
 # Variable effect size visualization
 ggcoefstats(x = m_pca_d, conf.int = TRUE,
-  conf.level = 0.95, conf.method = "HPDinterval", exclude.intercept = T, stats.labels =F) 
-# In the dot-whisker visual representation of the effect sizes and standard errors of our the variables we can  see that PCs 4 and 5 have the strongest effect size and large predictive power for dELA. Based on the characterization of which variables are represented by each PC, this means that slope (and to a smaller extend catchment length, area, and elevation) and morphology are the most important variables.
+  conf.level = 0.95, conf.method = "HPDinterval", exclude.intercept = T, stats.labels =F)
 ```
+
+In the dot-whisker visual representation of the effect sizes and standard errors of our the variables we can  see that PCs 4 and 5 have the strongest effect size and large predictive power for dELA. Based on the characterization of which variables are represented by each PC, this means that slope (and to a smaller extend catchment length, area, and elevation) and morphology are the most important variables.
+
 
 
 
 ## Automated variable selection 
 
-For the automated variable variable I focused on variables that I previously found to be strong predictors of ELA, aswell as the de-aggregated forms of temperature and precipitation metrics. While potential interaction between temperature and precipitation variables are likely to exist, these were not included in the saturated model, as just including a reduced list of variables with no interactions, already brought my computer to the edges of its computational limits. 
-
+For the automated variable variable I focused on variables that I previously found to be strong predictors of ELA, aswell as the de-aggregated forms of temperature and precipitation metrics. While potential interaction between temperature and precipitation variables are likely to exist, these were not included in the saturated model, as just including a reduced list of variables with no interactions, already brought my computer to the edges of its computational limits. Overall, variables where selected based on a priori assumptions on what I thought would be  will be more relevant to include, while also factoring in the outputs of my previous models and exploratory analysis.
 ```{r}
-
-# create semi-saturated model, with the broader variables based on my novice guess. These variables where selected based on a priori assumptions on what I thought would be  will be more relevant to include, based on the outputs of my previous models and exploratory analysis
 m_saturated <-
   glm( ELA ~ debris_cov  + morph_type + orientation + length  + P_snow + P_year + P_not_monsoon +                    T_mean_mea.yr + T_mean_monsoon +   T_mean_not_monsoon + Slope_min + Elev_min + Elev_max + Elev_mean, # + T_MIN_mean_monsoon + T_MIN_mean_not_monsoon + T_MAX_mean_monsoon  T_MAX_mean_not_monsoon ; taken out due to computational constraints. Additionally, to get the model to run, area, max/mean slope, t_variability and monsoon precipitation also needed to be removed. I chose these variables, as in previous models and in exploratory analysis they tended have low impacts on ELA.
   data = glacier_scaled,
@@ -364,25 +430,30 @@ top_model
 
 # Summarize top model
 summary(top_model)
-#The most important fixed effects where elevation variables and and the various orientations. A more detailed description and visualization can be found in the dot and whisker plot at the end of this section. 
+```
 
+The most important fixed effects where elevation variables and and the various orientations. A more detailed description and visualization can be found in the dot and whisker plot at the end of this section. 
+
+```{r}
 # psudo R^2
 r.squaredGLMM(top_model) # 95.74%
 
 plot(top_model)
-# the residual vs fitted plot shows a mostly flat and even distribution of points, with greater diviances seen at the lower spectrum of points, likely due to the negative skew described above
-
-# When checking the QQ-plot it is seen that there is a left tail at lower bonds and a right tail at the upper bonds. Following an ad hoc transformation of the dependent variable ELA, this observed trend only showed a very marginal improvement, so I decided to keep ELA in its un-transformed state.  
-
-
-# Variable effect size visualization
-ggcoefstats(x = top_model, conf.int = TRUE,
-  conf.level = 0.95, conf.method = "HPDinterval", exclude.intercept = T, stats.labels =F) 
-# The automated model section based on AIC ranking of 16384 models, indicated that min and max elevation have are the two most important variables to predict ELA (with effect sizes 183.87 and 90.23 respectively & with small std.errors of 4.49 and 3.34), with large effect sizes relative to other variables. The other next most important variables where the various orientation directions, as well as precipitation and temperature in non monsoon periods. A notable orison is mean yearly temperature, which in the glmer model had the highest effect size. This could be attributed to high co-linearity between mean temperature and temperature in non monsoon periods, but with temperature in non monsoon periods have a large effect size and therefor being prioritized in the selection. 
-
 ```
 
-Automated variable selection dELA
+The residual vs fitted plot shows a mostly flat and even distribution of points, with greater diviances seen at the lower spectrum of points, likely due to the negative skew described above
+
+When checking the QQ-plot it is seen that there is a left tail at lower bonds and a right tail at the upper bonds. Following an ad hoc transformation of the dependent variable ELA, this observed trend only showed a very marginal improvement, so I decided to keep ELA in its un-transformed state.  
+
+```{r}
+# Variable effect size visualization
+ggcoefstats(x = top_model, conf.int = TRUE,
+  conf.level = 0.95, conf.method = "HPDinterval", exclude.intercept = T, stats.labels =F)
+```
+
+The automated model section based on AIC ranking of 16384 models, indicated that min and max elevation have are the two most important variables to predict ELA (with effect sizes 183.87 and 90.23 respectively & with small std.errors of 4.49 and 3.34), with large effect sizes relative to other variables. The other next most important variables where the various orientation directions, as well as precipitation and temperature in non monsoon periods. A notable orison is mean yearly temperature, which in the glmer model had the highest effect size. This could be attributed to high co-linearity between mean temperature and temperature in non monsoon periods, but with temperature in non monsoon periods have a large effect size and therefor being prioritized in the selection. 
+
+### Automated variable selection dELA
 
 ```{r}
 m_saturated_d <-
@@ -402,58 +473,68 @@ top_model_d
 
 # Summarize top model
 summary(top_model_d)
-#The most important fixed effects where mean annual temperature and mean temperature during monsoon phases. A more detailed description and visualization can be found in the dot and whisker plot at the end of this section. 
+```
 
+The most important fixed effects where mean annual temperature and mean temperature during monsoon phases. A more detailed description and visualization can be found in the dot and whisker plot at the end of this section.
+
+```{r}
 # psudo R^2
 r.squaredGLMM(top_model_d)  # 83.01%
 
 plot(top_model_d)
-# the residual vs fitted plot shows a mostly flat and even distribution of points, with greater deviances seen at the lower spectrum of points, likely due to the negative skew described above
+```
 
+The residual vs fitted plot shows a mostly flat and even distribution of points, with greater deviances seen at the lower spectrum of points, likely due to the negative skew described above
 
-# When checking the QQ-plot it is seen that there is a left tail at lower bonds and a right tail at the upper bonds. Following an ad hoc transformation of the dependent variable ELA, this observed trend only showed a very marginal improvement, so I decided to keep ELA in its un-transformed state.  
+When checking the QQ-plot it is seen that there is a left tail at lower bonds and a right tail at the upper bonds. Following an ad hoc transformation of the dependent variable ELA, this observed trend only showed a very marginal improvement, so I decided to keep ELA in its un-transformed state.
 
-
+```{r}
 # Variable effect size visualization
 ggcoefstats(x = top_model_d, conf.int = TRUE,
-  conf.level = 0.95, conf.method = "HPDinterval", exclude.intercept = T, stats.labels =F) 
-# In the dot-whisker visual representation of the effect sizes and standard errors of our the variables we can  see that mean elevation and mean annual temperature are the two most influential variables at predicting dELA (although the are also accompanied by large standard errors). These are then followed by precipitation the various available elevation variables, as well as the debris cover, which was already found to be relevant in predicting dELA in the hierarchical GLM and baysian models. 
+  conf.level = 0.95, conf.method = "HPDinterval", exclude.intercept = T, stats.labels =F)
 ```
+
+In the dot-whisker visual representation of the effect sizes and standard errors of our the variables we can  see that mean elevation and mean annual temperature are the two most influential variables at predicting dELA (although the are also accompanied by large standard errors). These are then followed by precipitation the various available elevation variables, as well as the debris cover, which was already found to be relevant in predicting dELA in the hierarchical GLM and baysian models. 
+
 
 # Compairisons and conclusions 
 
 ```{r}
+(BIC_ELA <- BIC(m_lme4, m_bays, m_pca, top_model) %>% 
+  arrange(BIC))
 
-AICc_df <- AICc(m_lme4, m_lme4_d, m_bays, m_bays_d, m_pca, m_pca_d, top_model, top_model_d) %>% 
-  arrange(AICc)
+(BIC_dELA <- BIC(m_lme4_d, m_bays_d, m_pca_d, top_model_d) %>% 
+  arrange(BIC))
 
-BIC_ELA <- BIC(m_lme4, m_bays, m_pca, top_model) %>% 
-  arrange(BIC)
 
-BIC_dELA <- BIC(m_lme4_d, m_bays_d, m_pca_d, top_model_d) %>% 
-  arrange(BIC)
+# initial AIC ranking that I abandoned in favour of using BIC
+#AICc_df <- AICc(m_lme4, m_lme4_d, m_bays, m_bays_d, m_pca, m_pca_d, top_model, top_model_d) %>% 
+#  arrange(AICc)
+#AICc_df
+```
 
-AICc_df
 
-# For the between model comparison, I decided to use the Bayesian Information Criterion (BIC), as opposed to the Akaike's information criterion (c). Using the BIC comes with a number of advantages such as assessing parsimony of different model types and model structures more consistently, and being more tolerant of models with slight under-fitting (likely to be the case in some of my models, as residual deviation was sometimes large at low and high end of the distribution). Furthermore BIC is more selective for the total number of variables included in the model and has a stronger negative weight associated to number of parameters. Applying greater penalization to models with many variables seems like a reasonable approach for this analysis, as all models had large sets of included variables, increasing the risk of over-fitting. A final argument for using BIC is that this has the potential to reduce the arbitrary methodological advantage of the automated variable selection methods, As the automated band selection methods optimize for AIC. using BIC as the final assessment criterion allows for a slightly fairer comparison between the models. As there is a slight differentiation between AIC and BIC, this  means that the automated selection models are not fully optimized for the assessment criterion. 
+For the between model comparison, I decided to use the Bayesian Information Criterion (BIC), as opposed to the Akaike`s information criterion (c). Using the BIC comes with a number of advantages such as assessing parsimony of different model types and model structures more consistently, and being more tolerant of models with slight under-fitting (likely to be the case in some of my models, as residual deviation was sometimes large at low and high end of the distribution). Furthermore BIC is more selective for the total number of variables included in the model and has a stronger negative weight associated to number of parameters. Applying greater penalization to models with many variables seems like a reasonable approach for this analysis, as all models had large sets of included variables, increasing the risk of over-fitting. A final argument for using BIC is that this has the potential to reduce the arbitrary methodological advantage of the automated variable selection methods, As the automated band selection methods optimize for AIC. Using BIC as the final assessment criterion allows for a slightly fairer comparison between the models. As there is a slight differentiation between AIC and BIC, this  means that the automated selection models are not fully optimized for the assessment criterion. 
 
-# Based on a compared BIC ranking between the models constructed under my four modeling approaches, it is seen that automated variable selection performed best for  predicting both the current ELA, as well as dELA. While I choice BIC as the final assessment criterion, it still unsurprising that the automated band selection methods performed the best, as they where optimized to have low parsimony. Despite the automated varaibale selection method practically being the "best" model, in terms of my personal confidence in the found results and overall reproduceability, I would favor the Bayesian model. The Baysian models yielded an acceptably low BIC values for both ELA and dELA (unlike the hierarchical GLM), and comes with the conceptual advantage of having its variables selected based on a priori knowledge/guesses of what makes mechanistic sense to include. 
+Based on a compared BIC ranking between the models constructed under my four modeling approaches, it is seen that automated variable selection performed best for  predicting both the current ELA. While I choice BIC as the final assessment criterion, it still unsurprising that the automated band selection methods performed the best, as they where optimized to have low parsimony. Despite the automated variable selection method practically being the "best" model, in terms of my personal confidence in the found results and overall reproduceability, I would favor the Bayesian model. The Bayesian models yielded an acceptably low BIC values for both ELA, and comes with the conceptual advantage of having its variables selected based on a priori knowledge/guesses of what makes mechanistic sense to include. The reason that the Bayesian model for dELA is likely to have a vastly lower BIC is that it may handle being defined as a Poisson distribution model differently than the frequentest approaches. It is possible that my initial choice of using a Poisson as opposed to a inverse Gaussian was sub-optimal, therefor resulting in the inflated BIC values. While unlikely based on my understanding of how BIC is calculated, an alternative explanation could be that when using a Poisson distribution the underlying math for calculating BIC, and that the inflated BIC values are a calculation artifact and not a result of using the wrong distribution for the dELA models. 
 
-# Regardless of what modeling approach is preferred, synthesizing the results of all my models helps provide more robust answers to the main research questions. 
+Regardless of what modeling approach is preferred, synthesizing the results of all my models helps provide more robust answers to the main research questions.
+
+
+
 
 # 1.	Which are the most important topographical and climatological drivers of glacier equilibrium line altitude (ELA)?
 
-# lme4 mean elevation and mean temp; followed by precipitation in non-monsoon phases, as well as the temperature variability variable that I aggregated from mean temperature data.
 
-# bayes the mean elevation and mean annual temperature are highly influential variables at predicting ELA. This is followed by followed by the also previously identified variables of temperature variability and precipitation in non-monsoon phases. The correspondence between the hierarchical GLM and Bayesian model in terms of the magnitude of how variables influence ELA makes intuitive sense, as largely the models largely share the same hierarchical structure and only slightly deviate in how effect sizes and standard errors are calculated. The lack of major differences between the two models is also accentuated by the fact the only weak (non-informative) priors were selected for the Bayesian model.
-
+Synthesizing the results from all my modeling approaches, (while favoring my a priori defined hierarchical models), I have identified mean annual temperature and mean elevation and as the two most important variables for predicting ELA. Despite the automated selection method choosing temperature in non monsoon phases over mean annual temperature, I believe that is likely an artifact of high degree of co-linearity between the variables and the automated selection method being highly sensitive to marginal deviation in effect size. Overall though, both Philosophical modeling approaches converge on the fact that temperature values averaged across longer timescales are critical to predicting ELA.  Mean precipitation in non monsoon periods and temperature variability are generally the next two most important variables and where consistently important predictors across all modeling approaches. Overall, when considering the results of my models I conclude that  mean annual temperature and mean elevation and as the two most important variables for predicting ELA, while mean precipitation in non monsoon periods and temperature variability being the two strongest key secondary variables.
 
 
 # 2.	Can we explain ELA changes since the Little Ice Age with topographical and climatological variables?
 
-# lme4 The most important fixed effects where mean temperature and debris cover; mean annual temperature is an highly influential variable at predicting ELA. This is followed by followed by the previously identified variable of precipitation in non-monsoon phases, as well as the new debris cover variable. 
+Based on the synthesized results of all my models I believe that ELA changes since the Little Ice Age can be reasonably predicted using climatological and topographical variables. As when attempting to predict ELA, all models converged on mean annual temperature being a critical variable when predicting dELA. Furthermore both the hierarchical and automated section models identified debris cover as a variable with large influence on dELA. Additional variables that both modeling approaches identified as being particularly useful for predicting dELA where precipitation in non monsoon periods, and the various available elevation metrics. Overall, when considering the results of my models I conclude that  mean annual temperature and debris cover and as the two most important variables for predicting dELA, while mean precipitation in non monsoon periods and catchment elevation being the two strongest key secondary variables.
 
+### Remarks on ELA and dELA shared characteristics 
 
+Both glacier equilibrium line altitude and changes in ELA since the Little Ice Age can be explained with with topographical climatological variables. While the importance and strength of topographical and climatological variables for predicting ELA and dELA differ, it is notable that key variables are particularly important for predicting both. I found that Mean annual temperature, mean elevation, and precipitation in non monsoon periods (correlated with snow fall) to universally being strong predictors of both ELA and dELA, across modeling approaches. This makes mechanistic/conceptual sense and as i) snow fall amount, ii) temperature, and iii) elevation are key variables that respectively describe the core physical glaciation process of i) glacier mass balance accumulation, ii) glacier mass balance decline, iii) the core environmental conditions that define glacier stability. While I don not want to overinterprete the significance of these variables, without a expert background knowledge of the nuanced geophysical processes of glacier dynamics, the apparent mechanistic logic  of these variables being identified as being key predictors, provides some additional confidence in the validity of the modeling decisions and approaches made during this analysis. 
 
-```
 
